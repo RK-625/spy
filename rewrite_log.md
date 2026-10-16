@@ -9,3 +9,9 @@
 - Registered Better Auth with `app.use(betterAuth)` in `convex/convex.config.ts`; included the user's installed auth dependencies and Bun lockfile.
 - Validation: Convex TypeScript check, config ESLint check, and `git diff --check` passed.
 - Deployment pending: no Convex deployment or hosting target is configured in this worktree. Login methods, endpoints, and profile provisioning remain separate steps.
+
+## 2026-10-16 — Better Auth token verification config
+
+- Added `convex/auth.config.ts` using the installed Better Auth integration's `getAuthConfigProvider()`, checked against Convex's `AuthConfig` type.
+- Validation: Convex TypeScript check, config ESLint check, and `git diff --check` passed.
+- Deployment pending: this worktree still has no configured Convex deployment or hosting target. Token verification requires the forthcoming Better Auth server and JWKS HTTP endpoint before login can work.
