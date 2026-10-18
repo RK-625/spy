@@ -150,3 +150,9 @@
 - Connected the source multiple-choice/write-in question tool and composer to persisted Agent history. The model yields without executing the tool; reload restores the pending question, and choice/custom answers use the original Q/A normal-message format. Shared bounded parsing validates model input and restored UI. Preserved edits during answer acceptance with a draft-version fence.
 - Added authenticated, stale-safe, idempotent dismissal that saves the source cancellation output without invoking a model. Blocks dismissal while a fork copies that source order. Timeline labels the emitted question without a perpetual running state. Agent's installed history loader removes orphaned calls from subsequent model context.
 - Validation: production build, lint/application and Convex type checks, whitespace checks and development deployment to `secret-nightingale-447`. No account/key/provider/browser/runtime tests or model calls were performed. Remaining ports: memory/build/Excalidraw tools, Notes and Graph; web publishing still requires a configured host.
+
+## 2026-10-18 — Editor highlight and graph packages
+
+- Added `@milkdown/plugin-highlight`, `shiki`, `graphology`, and `graphology-traversal` dependencies and updated the Bun lockfile in preparation for Milkdown syntax highlighting and Graph visualization.
+- Validation: full production build, `bun run lint` (tsc + eslint), and `git diff --check` passed cleanly.
+- Web deployment pending: no web hosting target is configured in this repository; this sprint updates dependencies only.
