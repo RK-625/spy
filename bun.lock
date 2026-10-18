@@ -14,6 +14,8 @@
         "@convex-dev/agent": "^0.7.8",
         "@convex-dev/better-auth": "^0.12.5",
         "@convex-dev/react-query": "^0.1.0",
+        "@convex-dev/workflow": "0.4.10",
+        "@convex-dev/workpool": "^0.4.4",
         "@floating-ui/react": "^0.27.20",
         "@fontsource-variable/inter": "5.3.0",
         "@fontsource-variable/unbounded": "5.3.0",
@@ -236,11 +238,17 @@
 
     "@convex-dev/agent": ["@convex-dev/agent@0.7.8", "", { "optionalDependencies": { "@ungap/structured-clone": "^1.4.0" }, "peerDependencies": { "@ai-sdk/provider": "^4.0.0", "@ai-sdk/provider-utils": "^5.0.0", "ai": "^7.0.0", "convex": "^1.46.0", "convex-helpers": "^0.1.127", "react": "^18.3.1 || ^19.0.0" }, "optionalPeers": ["react"] }, "sha512-QlupFEf/oOnBLwm8TXUAuy+cgxKaSNz6mRNESaJabWIbLwKEooMLlXbSo14RiH8CvMJ9l4tOYBoO59QI3Igy3g=="],
 
+    "@convex-dev/batch-worker": ["@convex-dev/batch-worker@0.2.2", "", { "peerDependencies": { "convex": "^1.36.1", "react": "^18.3.1 || ^19.0.0" } }, "sha512-3knigElzTVhWw1sN28EYkGBTdrJZ03vMj2PJPuFq3V0Tg41i7tcv/EWDBFQWcUaKzBWWVw693hcJtxCF3CRtEw=="],
+
     "@convex-dev/better-auth": ["@convex-dev/better-auth@0.12.5", "", { "dependencies": { "@better-fetch/fetch": "^1.1.18", "common-tags": "^1.8.2", "convex-helpers": "^0.1.95", "jose": "^6.1.0", "remeda": "^2.32.0", "semver": "^7.7.3", "type-fest": "^5.0.0", "zod": "^4.0.0" }, "peerDependencies": { "better-auth": ">=1.6.11 <1.7.0", "convex": "^1.25.0", "react": "^18.3.1 || ^19.0.0" } }, "sha512-YFUbGk04OlINno9FpOTNZN67AP+kSQsblfep5zs1f/WTgMWjD5FymU6rSSh3mu52gukmDNnBJTjC/lj4QRpjlQ=="],
 
     "@convex-dev/eslint-plugin": ["@convex-dev/eslint-plugin@5.0.0", "", { "dependencies": { "@typescript-eslint/types": "~8.58.0", "@typescript-eslint/utils": "~8.58.0" }, "peerDependencies": { "convex": "^1.43.0" } }, "sha512-UFhZ7bJBo4mTfa829/mntoAwyC9aKwXe6dxCV7PianSdAfFIbdCwCjWPBmhqn1hNlpqhVU385C/vjL8CXfxA2Q=="],
 
     "@convex-dev/react-query": ["@convex-dev/react-query@0.1.0", "", { "peerDependencies": { "@tanstack/react-query": "^5.0.0", "convex": "^1.29.3" } }, "sha512-ULmBZCtAQDUePdBhUv7hj1Yy4QiCelhi6uEIOtMpjW8db6W9CFKvQwLt9heLngccFyMFfAZdOfSrT+cP4AH0Jw=="],
+
+    "@convex-dev/workflow": ["@convex-dev/workflow@0.4.10", "", { "dependencies": { "async-channel": "^0.2.0" }, "peerDependencies": { "@convex-dev/workpool": "^0.4.4", "convex": "^1.46.0", "convex-helpers": "^0.1.127" } }, "sha512-BHEDZEJUhZQOuqtop4bZRgomoKFA+JNECat+c9/cAuQmCegn7F0xlAiFiCPtYNm2xyUh3Rv+fJuNhnqs4th1cw=="],
+
+    "@convex-dev/workpool": ["@convex-dev/workpool@0.4.14", "", { "dependencies": { "@convex-dev/batch-worker": "^0.2.2" }, "peerDependencies": { "convex": "^1.36.1", "convex-helpers": "^0.1.94" } }, "sha512-uTgOlLo7/Sv5OYhb6jjQ/+COAgLhOd1sMfHtJbN5qB298SHJQGoUUab66f6kqfEb8ugD1FnkL0oNZmk6fMqkow=="],
 
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.75.1", "", { "dependencies": { "@dotenvx/primitives": "^0.8.0", "commander": "^11.1.0", "conf": "^10.2.0", "dotenv": "^17.2.1", "enquirer": "^2.4.1", "env-paths": "^2.2.1", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "open": "^8.4.2", "picomatch": "^4.0.4", "systeminformation": "^5.22.11", "undici": "^7.11.0", "which": "^4.0.0", "yocto-spinner": "^1.1.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, "sha512-/BITOC9dmS/edY2zQwZNicQ059O6RKabtQfyEafV0nGtfYRNHYy1DIPiYVcov40+tob9hfmBnbR963dS+EQ1DQ=="],
 
@@ -1001,6 +1009,8 @@
     "aria-hidden": ["aria-hidden@1.2.6", "", { "dependencies": { "tslib": "^2.0.0" } }, "sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA=="],
 
     "ast-types": ["ast-types@0.16.3", "", { "dependencies": { "tslib": "^2.0.1" } }, "sha512-FvWoWYfSCM6kRxCSH+MGLHIKKGRL6A6AW7Zek2O32REPQRdg131428uRTKMBYAeRd3XXAaHDS60Wpri7CdKDrA=="],
+
+    "async-channel": ["async-channel@0.2.0", "", {}, "sha512-BJyjI/sfKlyijaBt2hbOSxT28xGNtLR0QLzAKO1Hlnv5BULY7sAoYoTPW3lfr1ZIC7y+FxabxO9T8GXpyoofGg=="],
 
     "atomically": ["atomically@1.7.0", "", {}, "sha512-Xcz9l0z7y9yQ9rdDaxlmaI4uJHf/T8g9hOEzJcsEqX2SjCj4J20uK7+ldkDHMbpJDK76wF7xEIgxc/vSlsfw5w=="],
 

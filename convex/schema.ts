@@ -36,12 +36,22 @@ export default defineSchema({
     ...conversationSummary.omit('_id').fields,
     ownerTokenIdentifier: v.string(),
     activeTurn: v.optional(turn),
+    forkRequestId: v.optional(v.string()),
+    forkWorkflowId: v.optional(v.string()),
   })
     .index('by_ownerTokenIdentifier_and_updatedAt', [
       'ownerTokenIdentifier',
       'updatedAt',
     ])
     .index('by_threadId', ['threadId'])
+    .index('by_ownerTokenIdentifier_and_forkRequestId', [
+      'ownerTokenIdentifier',
+      'forkRequestId',
+    ])
+    .index('by_sourceConversationId_and_status', [
+      'sourceConversationId',
+      'status',
+    ])
     .searchIndex('search_title', {
       searchField: 'title',
       filterFields: ['ownerTokenIdentifier'],

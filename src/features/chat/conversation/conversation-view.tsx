@@ -39,6 +39,7 @@ export interface ConversationViewProps {
   error?: string | null
   onEditMessage?: (message: UIMessage) => void
   onForkMessage?: (messageId: string) => void
+  forkPending?: boolean
   renderToolPart?: (part: ToolPart) => ReactNode
   onAddQuote?: (excerpt: MessageExcerpt) => void
   history?: { loading: boolean; canLoadMore: boolean; loadMore: () => void }
@@ -182,6 +183,7 @@ export function ConversationView({
   error,
   onEditMessage,
   onForkMessage,
+  forkPending,
   renderToolPart,
   onAddQuote,
   history,
@@ -337,6 +339,7 @@ export function ConversationView({
                           <ChatActionButton
                             icon={Split}
                             label="Fork chat"
+                            disabled={forkPending}
                             onClick={() => onForkMessage(message.id)}
                           />
                         )}

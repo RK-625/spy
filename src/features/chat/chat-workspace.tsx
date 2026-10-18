@@ -9,6 +9,7 @@ import type { ConversationViewProps } from './conversation/conversation-view'
 import type { MessageExcerpt } from './conversation/selection/message-selection'
 import type { PromptDraft } from './prompt/types'
 import type { PromptInputWorkspaceProps } from './prompt/shell/prompt-input'
+import type { ComposerPreferences } from './types'
 
 export interface ChatWorkspaceProps extends PromptInputWorkspaceProps {
   conversationId: string
@@ -17,7 +18,8 @@ export interface ChatWorkspaceProps extends PromptInputWorkspaceProps {
   initialDraft?: PromptDraft
   onDraftChange?: (draft: PromptDraft) => void
   onEditMessage?: ConversationViewProps['onEditMessage']
-  onForkMessage?: ConversationViewProps['onForkMessage']
+  onForkMessage?: (messageId: string, preferences: ComposerPreferences) => void
+  forkPending?: boolean
   renderToolPart?: ConversationViewProps['renderToolPart']
   history?: ConversationViewProps['history']
 }
@@ -43,11 +45,12 @@ function ChatWorkspaceContent({
   error,
   onEditMessage,
   onForkMessage,
+  forkPending,
   renderToolPart,
   history,
   ...composer
 }: ChatWorkspaceProps) {
-  const { quotes, focusInput } = usePromptInputContext()
+  const { quotes, focusInput, prefs } = usePromptInputContext()
   const addQuote = useCallback(
     (excerpt: MessageExcerpt) => {
       quotes.add(excerpt)
@@ -63,7 +66,19 @@ function ChatWorkspaceContent({
         status={composer.status}
         error={error}
         onEditMessage={onEditMessage}
-        onForkMessage={onForkMessage}
+        onForkMessage={
+          onForkMessage
+            ? (messageId) =>
+                onForkMessage(messageId, {
+                  model: prefs.model,
+                  mode: prefs.mode,
+                  useWebSearch: prefs.useWebSearch,
+                  useExcalidraw: prefs.useExcalidraw,
+                  useBuildMode: prefs.useBuildMode,
+                })
+            : undefined
+        }
+        forkPending={forkPending}
         renderToolPart={renderToolPart}
         onAddQuote={addQuote}
         history={history}

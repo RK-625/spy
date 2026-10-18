@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as chat_conversations from "../chat/conversations.js";
 import type * as chat_drafts from "../chat/drafts.js";
 import type * as chat_files from "../chat/files.js";
+import type * as chat_forks from "../chat/forks.js";
 import type * as chat_generate from "../chat/generate.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_models from "../chat/models.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "chat/conversations": typeof chat_conversations;
   "chat/drafts": typeof chat_drafts;
   "chat/files": typeof chat_files;
+  "chat/forks": typeof chat_forks;
   "chat/generate": typeof chat_generate;
   "chat/messages": typeof chat_messages;
   "chat/models": typeof chat_models;
@@ -87,4 +89,5 @@ export declare const internal: FilterApi<
 export declare const components: {
   betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
   agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+  workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
 };

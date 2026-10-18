@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { convexQuery } from '@convex-dev/react-query'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMutation } from 'convex/react'
@@ -41,6 +41,11 @@ export function ChatPage({
   )
     return <ChatLoading />
   const conversation = conversationId ? result.data : null
+  if (
+    conversation?.status === 'forking' ||
+    conversation?.status === 'fork-error'
+  )
+    return <ForkProgress conversation={conversation} />
   const draftKey = conversation?.draftKey ?? conversation?._id ?? newDraftKey
   if (!draftKey) return <ChatLoading />
   return (
@@ -49,6 +54,47 @@ export function ChatPage({
       draftKey={draftKey}
       conversation={conversation}
     />
+  )
+}
+
+function ForkProgress({ conversation }: { conversation: Conversation }) {
+  const navigate = useNavigate()
+  const failed = conversation.status === 'fork-error'
+  return (
+    <main className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-text-secondary">
+      <p role={failed ? 'alert' : 'status'}>
+        {failed ? conversation.error : 'Forking conversation…'}
+      </p>
+      {!failed && (
+        <p>
+          Your copy will appear here when it’s ready. You can leave this page
+          and return from Recents.
+        </p>
+      )}
+      {conversation.sourceConversationId && (
+        <button
+          type="button"
+          className="rounded px-3 py-2 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={() => {
+            void navigate({
+              to: '/chat',
+              search: { chat: conversation.sourceConversationId },
+            })
+          }}
+        >
+          Back to original chat
+        </button>
+      )}
+      <button
+        type="button"
+        className="rounded px-3 py-2 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring"
+        onClick={() => {
+          void navigate({ to: '/chat', search: { draft: crypto.randomUUID() } })
+        }}
+      >
+        New chat
+      </button>
+    </main>
   )
 }
 
@@ -143,6 +189,9 @@ function LiveChat({
   const draft = useSavedDraft(draftKey, conversation?._id, savedDraft)
   const send = useMutation(api.chat.conversations.send)
   const stop = useMutation(api.chat.conversations.stop)
+  const createFork = useMutation(api.chat.forks.create)
+  const forkInFlight = useRef(false)
+  const [forkPending, setForkPending] = useState(false)
   const history = useThreadMessages(
     api.chat.messages.list,
     conversation ? { threadId: conversation.threadId } : 'skip',
@@ -156,6 +205,29 @@ function LiveChat({
     () => toUIMessages(history.results),
     [history.results],
   )
+
+  async function fork(messageId: string, preferences: ComposerPreferences) {
+    if (!conversation || forkInFlight.current) return
+    forkInFlight.current = true
+    setForkPending(true)
+    try {
+      await draft.flush()
+      const result = await createFork({
+        conversationId: conversation._id,
+        messageId,
+        requestId: crypto.randomUUID(),
+        preferences,
+      })
+      await navigate({ to: '/chat', search: { chat: result.conversationId } })
+    } catch {
+      toast.error(
+        'Couldn’t fork this reply. Check your connection and try again.',
+      )
+    } finally {
+      forkInFlight.current = false
+      setForkPending(false)
+    }
+  }
 
   async function submit(
     message: PromptInputMessage,
@@ -184,6 +256,7 @@ function LiveChat({
         updatedAt: Date.now(),
         status: 'queued',
         error: undefined,
+        sourceConversationId: undefined,
       })
       // The stable draft key keeps the editor and any newer edits mounted across first send.
       setTimeout(() => {
@@ -235,6 +308,10 @@ function LiveChat({
         providerKeys={keys}
         openSettings={openSettings}
         onSubmitMessage={submit}
+        onForkMessage={(messageId, preferences) => {
+          void fork(messageId, preferences)
+        }}
+        forkPending={forkPending}
         attachmentTransport="reference"
         stop={() => {
           if (conversation)

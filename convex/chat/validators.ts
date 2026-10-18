@@ -19,9 +19,12 @@ export const conversationSummary = v.object({
     v.literal('streaming'),
     v.literal('stopping'),
     v.literal('error'),
+    v.literal('forking'),
+    v.literal('fork-error'),
   ),
   error: v.optional(v.string()),
   draftKey: v.optional(v.string()),
+  sourceConversationId: v.optional(v.id('conversations')),
 })
 
 export const draftContent = v.object({

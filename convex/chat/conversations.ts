@@ -30,6 +30,7 @@ function summary(doc: Doc<'conversations'>) {
     status: doc.status,
     error: doc.error,
     draftKey: doc.draftKey,
+    sourceConversationId: doc.sourceConversationId,
   }
 }
 
@@ -143,6 +144,8 @@ export const send = mutation({
     let threadId: string
     if (conversationId) {
       const existing = await requireConversation(ctx, conversationId)
+      if (existing.status === 'forking' || existing.status === 'fork-error')
+        throw new ConvexError('This conversation has not finished copying.')
       if (existing.activeTurn)
         throw new ConvexError('Wait for the current response or stop it first.')
       if (
@@ -257,6 +260,18 @@ export const remove = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const conversation = await requireConversation(ctx, args.conversationId)
+    if (conversation.status === 'forking')
+      throw new ConvexError('Wait for this conversation to finish copying.')
+    const copyingFork = await ctx.db
+      .query('conversations')
+      .withIndex('by_sourceConversationId_and_status', (q) =>
+        q.eq('sourceConversationId', conversation._id).eq('status', 'forking'),
+      )
+      .first()
+    if (copyingFork)
+      throw new ConvexError(
+        'Wait for its fork to finish copying before deleting this conversation.',
+      )
     if (conversation.activeTurn)
       throw new ConvexError(
         'Stop the response before deleting this conversation.',
