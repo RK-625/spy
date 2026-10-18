@@ -7,6 +7,7 @@ export const turn = v.object({
   model: v.string(),
   mode: v.string(),
   useWebSearch: v.optional(v.boolean()),
+  useBuildMode: v.optional(v.boolean()),
 })
 
 export const conversationSummary = v.object({

@@ -250,6 +250,7 @@ function LiveChat({
       model: preferences.model,
       mode: preferences.mode,
       useWebSearch: preferences.useWebSearch,
+      useBuildMode: preferences.useBuildMode,
       uploadIds,
       draftKey,
       draftVersion: message.draftVersion,
@@ -335,7 +336,7 @@ function LiveChat({
               toast.error('Couldn’t stop the response. Try again.'),
             )
         }}
-        tools={{ webSearch: true, build: false, excalidraw: false }}
+        tools={{ webSearch: true, build: true, excalidraw: false }}
         history={{
           loading: history.status === 'LoadingMore',
           canLoadMore: history.status === 'CanLoadMore',

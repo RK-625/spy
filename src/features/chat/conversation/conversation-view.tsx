@@ -136,8 +136,8 @@ function ThoughtSteps({
           isSearch && part.state === 'output-available'
             ? searchResults(part.output)
             : []
-        const searchError =
-          isSearch &&
+        // Product tools report safe failures as { error } outputs.
+        const toolError =
           part.state === 'output-available' &&
           part.output &&
           typeof part.output === 'object' &&
@@ -166,7 +166,7 @@ function ThoughtSteps({
                 ? 'The tool could not finish.'
                 : part.state === 'output-denied'
                   ? 'Tool request declined.'
-                  : searchError
+                  : toolError
             }
           >
             {results.length > 0 && (

@@ -77,6 +77,31 @@ export const context = internalQuery({
   },
 })
 
+/**
+ * Memory tools re-resolve the owner from the active stored turn, never from a
+ * caller or model. Writes additionally need the turn's server-recorded build mode.
+ */
+export const memoryAccess = internalQuery({
+  args: runArgs,
+  returns: v.union(
+    v.null(),
+    v.object({ ownerTokenIdentifier: v.string(), buildMode: v.boolean() }),
+  ),
+  handler: async (ctx, args) => {
+    const chat = await ctx.db.get('conversations', args.conversationId)
+    if (
+      !chat ||
+      chat.status !== 'streaming' ||
+      chat.activeTurn?.requestId !== args.requestId
+    )
+      return null
+    return {
+      ownerTokenIdentifier: chat.ownerTokenIdentifier,
+      buildMode: chat.activeTurn.useBuildMode === true,
+    }
+  },
+})
+
 export const running = internalQuery({
   args: runArgs,
   returns: v.boolean(),
