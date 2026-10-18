@@ -1,8 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { useAction, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
+import { WorkspaceAccessContext } from './workspace-access'
+import type { SettingsPane } from '~/components/workspace/settings/workspace-settings'
 import type { ReactNode } from 'react'
 import type {
   ProviderDefinition,
@@ -15,11 +17,21 @@ export function ProviderWorkspace({
   user,
   onSignOut,
   children,
+  sidebarContent,
+  onNewChat,
 }: {
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
   children: ReactNode
+  sidebarContent?: ReactNode
+  onNewChat?: () => void
 }) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsPane, setSettingsPane] = useState<SettingsPane>('general')
+  const openSettings = useCallback((pane: SettingsPane) => {
+    setSettingsPane(pane)
+    setSettingsOpen(true)
+  }, [])
   const status = useQuery({
     ...convexQuery(api.providers.keys.status, {}),
     retry: false,
@@ -81,9 +93,24 @@ export function ProviderWorkspace({
     onRemoveKey,
   ])
 
+  const access = useMemo(() => ({ keys, openSettings }), [keys, openSettings])
   return (
-    <WorkspaceShell user={user} onSignOut={onSignOut} providerKeys={keys}>
-      {children}
-    </WorkspaceShell>
+    <WorkspaceAccessContext value={access}>
+      <WorkspaceShell
+        user={user}
+        onSignOut={onSignOut}
+        providerKeys={keys}
+        settings={{
+          open: settingsOpen,
+          pane: settingsPane,
+          onOpenChange: setSettingsOpen,
+          onPaneChange: setSettingsPane,
+        }}
+        sidebarContent={keys.ready ? sidebarContent : null}
+        onNewChat={onNewChat}
+      >
+        {children}
+      </WorkspaceShell>
+    </WorkspaceAccessContext>
   )
 }

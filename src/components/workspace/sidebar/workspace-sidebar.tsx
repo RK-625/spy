@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Search, Settings } from 'lucide-react'
+import { Search, Settings, SquarePen } from 'lucide-react'
 import { WORKSPACE_ROUTES, isWorkspaceRouteActive } from '../navigation'
 import { ChatSidebarHeader } from './sidebar-header'
 import { ChatSidebarItem } from './sidebar-item'
@@ -27,6 +27,7 @@ export function WorkspaceSidebar({
   onOpenSettings,
   settingsOpen,
   children,
+  onNewChat,
 }: {
   pathname: string
   onNavigate: (path: WorkspacePath) => void
@@ -34,6 +35,7 @@ export function WorkspaceSidebar({
   onOpenSettings: () => void
   settingsOpen: boolean
   children?: ReactNode
+  onNewChat?: () => void
 }) {
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('icon')
   const reducedMotion = useReducedMotion()
@@ -125,6 +127,16 @@ export function WorkspaceSidebar({
                   onOpenNotes={() => onNavigate('/notes')}
                   onOpenGraph={() => onNavigate('/graph')}
                 />
+                {onNewChat && (
+                  <div className="mt-3">
+                    <ChatSidebarItem
+                      icon={SquarePen}
+                      label="New chat"
+                      onClick={onNewChat}
+                      showLabel
+                    />
+                  </div>
+                )}
               </nav>
               <div className="flex min-h-0 flex-1 flex-col">{children}</div>
             </motion.div>
@@ -146,6 +158,14 @@ export function WorkspaceSidebar({
                   showLabel={false}
                 />
               ))}
+              {onNewChat && (
+                <ChatSidebarItem
+                  icon={SquarePen}
+                  label="New chat"
+                  onClick={onNewChat}
+                  showLabel={false}
+                />
+              )}
               <div
                 aria-hidden
                 className="my-1 h-px bg-[var(--accent-border)]"

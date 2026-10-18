@@ -19,6 +19,7 @@ export interface ChatWorkspaceProps extends PromptInputWorkspaceProps {
   onEditMessage?: ConversationViewProps['onEditMessage']
   onForkMessage?: ConversationViewProps['onForkMessage']
   renderToolPart?: ConversationViewProps['renderToolPart']
+  history?: ConversationViewProps['history']
 }
 
 /** Source chat layout. Its owner supplies durable conversation/draft state and authenticated actions. */
@@ -43,6 +44,7 @@ function ChatWorkspaceContent({
   onEditMessage,
   onForkMessage,
   renderToolPart,
+  history,
   ...composer
 }: ChatWorkspaceProps) {
   const { quotes, focusInput } = usePromptInputContext()
@@ -64,6 +66,7 @@ function ChatWorkspaceContent({
         onForkMessage={onForkMessage}
         renderToolPart={renderToolPart}
         onAddQuote={addQuote}
+        history={history}
       />
       <PromptInputWorkspace {...composer} />
     </>

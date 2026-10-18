@@ -1,5 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/')({
-  component: () => <main aria-label="Workspace" className="min-h-svh" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/chat', replace: true })
+  },
 })

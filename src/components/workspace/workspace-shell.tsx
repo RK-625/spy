@@ -18,17 +18,33 @@ export function WorkspaceShell({
   onSignOut,
   providerKeys,
   children,
+  sidebarContent,
+  onNewChat,
+  settings,
 }: {
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
   providerKeys?: ProviderKeySettings
   children: ReactNode
+  sidebarContent?: ReactNode
+  onNewChat?: () => void
+  settings?: {
+    open: boolean
+    pane: SettingsPane
+    onOpenChange: (open: boolean) => void
+    onPaneChange: (pane: SettingsPane) => void
+  }
 }) {
   const pathname = useLocation({ select: (location) => location.pathname })
   const navigate = useNavigate()
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [localSettingsOpen, setLocalSettingsOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [settingsPane, setSettingsPane] = useState<SettingsPane>('general')
+  const [localSettingsPane, setLocalSettingsPane] =
+    useState<SettingsPane>('general')
+  const settingsOpen = settings?.open ?? localSettingsOpen
+  const settingsPane = settings?.pane ?? localSettingsPane
+  const setSettingsOpen = settings?.onOpenChange ?? setLocalSettingsOpen
+  const setSettingsPane = settings?.onPaneChange ?? setLocalSettingsPane
   const commandGroups = useMemo(
     () => [
       {
@@ -50,7 +66,7 @@ export function WorkspaceShell({
         ],
       },
     ],
-    [],
+    [setSettingsOpen],
   )
 
   function navigateTo(path: WorkspacePath) {
@@ -72,7 +88,10 @@ export function WorkspaceShell({
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
           settingsOpen={settingsOpen}
-        />
+          onNewChat={onNewChat}
+        >
+          {sidebarContent}
+        </WorkspaceSidebar>
         <div
           id="workspace-content"
           tabIndex={-1}

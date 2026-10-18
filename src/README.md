@@ -103,8 +103,7 @@ The sidebar keeps the original 56px/240px modes and `spy-sidebar-mode` storage
 key. Command/Ctrl+B changes its mode; Command/Ctrl+K opens action search.
 
 The first port covers navigation, search actions, theme preferences, General
-settings and sign-out. Chat composition/history, note hierarchy/detail/learning,
-and graph rendering remain to be connected. Conversation presentation is
+settings and sign-out. Chat composition/history now use Convex Agent with source recents and the ported composer. Attachments, durable drafts, tools, note hierarchy/detail/learning and graph rendering remain to be connected. Conversation presentation is
 ported under `features/chat/conversation`, with a standalone props interface
 and isolated `/conversation` and `/composer` previews in the workspace fixture.
 The source prompt lives under `features/chat/prompt`; its draft and turn

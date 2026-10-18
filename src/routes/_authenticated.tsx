@@ -1,6 +1,12 @@
-import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import {
+  Outlet,
+  createFileRoute,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import { SessionGuard } from '~/features/auth/session-guard'
 import { ProviderWorkspace } from '~/features/providers/provider-workspace'
+import { ChatRecents } from '~/features/chat/sidebar/recents'
 import { authClient, signOut } from '~/lib/auth-client'
 
 export const Route = createFileRoute('/_authenticated')({
@@ -14,6 +20,7 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedWorkspace() {
   const { data: session } = authClient.useSession()
+  const navigate = useNavigate()
   return (
     <SessionGuard>
       {session && (
@@ -21,6 +28,10 @@ function AuthenticatedWorkspace() {
           key={session.user.id}
           user={session.user}
           onSignOut={signOut}
+          sidebarContent={<ChatRecents />}
+          onNewChat={() => {
+            void navigate({ to: '/chat', search: {} })
+          }}
         >
           <Outlet />
         </ProviderWorkspace>

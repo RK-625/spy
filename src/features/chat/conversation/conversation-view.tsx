@@ -41,6 +41,7 @@ export interface ConversationViewProps {
   onForkMessage?: (messageId: string) => void
   renderToolPart?: (part: ToolPart) => ReactNode
   onAddQuote?: (excerpt: MessageExcerpt) => void
+  history?: { loading: boolean; canLoadMore: boolean; loadMore: () => void }
 }
 
 function plainText(message: UIMessage) {
@@ -183,6 +184,7 @@ export function ConversationView({
   onForkMessage,
   renderToolPart,
   onAddQuote,
+  history,
 }: ConversationViewProps) {
   const selectionScopeId = useId()
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
@@ -216,6 +218,16 @@ export function ConversationView({
         aria-label="Conversation messages"
         className="pb-16"
       >
+        {history && (history.canLoadMore || history.loading) && (
+          <button
+            type="button"
+            disabled={history.loading}
+            onClick={history.loadMore}
+            className="mx-auto rounded-[var(--radius)] px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {history.loading ? 'Loading messages…' : 'Load earlier messages'}
+          </button>
+        )}
         {(error || copyError) && (
           <p
             role="alert"

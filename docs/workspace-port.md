@@ -16,7 +16,7 @@ Reference: [RK-625/spy-frontend at 119b082](https://github.com/RK-625/spy-fronte
 | Login-only access                                      | Existing auth feature and backend config                                             | Preserved; public signup and account management stay disabled                                  |
 
 `/`, `/chat`, `/notes`, and `/graph` mount the shared shell after authentication.
-Their feature content is still blank. Provider settings now gate access until the user saves a Google embeddings key
+Chat mounts the ported conversation/composer; Notes and Graph feature content remain blank. Provider settings now gate access until the user saves a Google embeddings key
 and at least one chat-provider key. Google can satisfy both requirements. No
 conversations, notes, graphs, keys, or user records were migrated or fabricated.
 
@@ -33,8 +33,7 @@ adapted for the web.
 
 An isolated presentation preview lives at `http://localhost:3016/conversation`
 when running the existing workspace fixture. It uses local presentation data
-only, with no account/key/backend imports. The production routes do not yet
-mount this renderer; the composer and durable conversation transport come next.
+only, with no account/key/backend imports. The production Chat route now mounts this renderer with Agent history and streaming.
 
 ## Composer component sprint
 
@@ -56,8 +55,7 @@ hints and appends user messages in memory. It never calls a model or backend.
 `features/chat/chat-workspace.tsx` now composes the conversation and composer,
 including the source selection toolbar: completed message excerpts preserve
 Markdown structure and become quote chips in the shared draft. Each conversation
-has a separate selection scope. Production route composition, durable drafts and
-chat transport remain next.
+has a separate selection scope. Production route composition and text chat transport are connected; durable drafts, attachment transport and tools remain.
 
 ## Remaining feature ports
 
@@ -106,3 +104,9 @@ pending. Provider-key functions are deployed to development deployment
 `convex/chat/` now wraps the Agent component with server-derived ownership for every public operation. Conversations have one durable thread, indexed recents/title search, atomic prompt acceptance, request receipts, one active turn, stop fencing and a timeout recovery job. Histories and streaming deltas use bounded Agent pagination. Scheduled generation obtains the selected user's encrypted credential from the stored conversation, decrypts only in a Node action and uses the original provider factory/model choices. The shared catalog lives in `shared/models.ts`.
 
 This backend is deployed to the development target. Production chat route composition, recents UI, attachments, durable drafts, editing/forking and tools remain to connect. Static build/lint/type checks passed; no model calls or account/key tests were run. Streaming is based on the [Convex Agent streaming API](https://docs.convex.dev/agents/streaming).
+
+## Production chat composition sprint
+
+`features/chat/chat-page.tsx` connects the source UI to the Agent-backed APIs. `/chat?chat=<conversationId>` restores history and subscribes to live deltas; `/chat` starts an unsaved conversation, created on first accepted prompt. The full sidebar renders source recents with pagination and delete; both sidebar modes expose New chat. Messages have earlier-history pagination and saved-key model selection opens the shared provider settings. The authenticated root redirects to Chat.
+
+File upload transport, durable drafts, edit/fork, tools, Notes and Graph remain. Attachment attempts explicitly keep the draft while file transport is pending. Tool controls are hidden until executable handlers exist. No model requests or account/key tests were run.
