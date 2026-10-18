@@ -10,11 +10,14 @@
 
 import type * as auth from "../auth.js";
 import type * as chat_conversations from "../chat/conversations.js";
+import type * as chat_drafts from "../chat/drafts.js";
+import type * as chat_files from "../chat/files.js";
 import type * as chat_generate from "../chat/generate.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_models from "../chat/models.js";
 import type * as chat_ownership from "../chat/ownership.js";
 import type * as chat_runtime from "../chat/runtime.js";
+import type * as chat_upload from "../chat/upload.js";
 import type * as chat_validators from "../chat/validators.js";
 import type * as http from "../http.js";
 import type * as myFunctions from "../myFunctions.js";
@@ -35,11 +38,14 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "chat/conversations": typeof chat_conversations;
+  "chat/drafts": typeof chat_drafts;
+  "chat/files": typeof chat_files;
   "chat/generate": typeof chat_generate;
   "chat/messages": typeof chat_messages;
   "chat/models": typeof chat_models;
   "chat/ownership": typeof chat_ownership;
   "chat/runtime": typeof chat_runtime;
+  "chat/upload": typeof chat_upload;
   "chat/validators": typeof chat_validators;
   http: typeof http;
   myFunctions: typeof myFunctions;

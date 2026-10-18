@@ -42,6 +42,7 @@ interface AttachmentsValue {
 
 interface PromptInputContextValue {
   chatId: string
+  draftVersion: string
   attachments: AttachmentsValue
   textInput: {
     value: string
@@ -107,6 +108,10 @@ function PromptDraftProvider({
   const [preferences, setPreferences] = useState(
     initialDraft?.preferences ?? DEFAULT_PROMPT_PREFS,
   )
+  const draftVersion = useMemo(
+    () => crypto.randomUUID(),
+    [text, files, quoteItems, preferences],
+  )
   const filesRef = useRef(files)
   const fileInput = useRef<RefObject<HTMLInputElement | null> | null>(null)
   const validator = useRef<AttachmentAddValidator | null>(null)
@@ -129,8 +134,14 @@ function PromptDraftProvider({
     onDraftChangeRef.current = onDraftChange
   }, [onDraftChange])
   useEffect(() => {
-    onDraftChangeRef.current?.({ text, files, quotes: quoteItems, preferences })
-  }, [text, files, quoteItems, preferences])
+    onDraftChangeRef.current?.({
+      text,
+      files,
+      quotes: quoteItems,
+      preferences,
+      version: draftVersion,
+    })
+  }, [text, files, quoteItems, preferences, draftVersion])
 
   const __registerFileInput = useCallback(
     (ref: RefObject<HTMLInputElement | null>) => {
@@ -248,6 +259,7 @@ function PromptDraftProvider({
   const value = useMemo(
     () => ({
       chatId,
+      draftVersion,
       attachments,
       quotes,
       prefs,
@@ -260,6 +272,7 @@ function PromptDraftProvider({
     }),
     [
       chatId,
+      draftVersion,
       attachments,
       quotes,
       prefs,

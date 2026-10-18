@@ -3,6 +3,7 @@ import type { ComposerPreferences, PromptQuote } from '../types'
 
 /** Browser draft value; its owning feature decides how to persist it. */
 export interface PromptDraft {
+  version?: string
   text: string
   files: Array<PromptAttachmentItem>
   quotes: Array<PromptQuote>

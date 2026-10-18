@@ -52,6 +52,11 @@
  * picker `accept` and `filterIncomingFiles` in lockstep via this single constant.
  * When changing caps: edit `PROMPT_INPUT_MAX_FILES` / `PROMPT_INPUT_MAX_FILE_SIZE`.
  */
+import {
+  CHAT_ATTACHMENT_ACCEPT,
+  CHAT_ATTACHMENT_MAX_BYTES,
+  CHAT_ATTACHMENT_MAX_FILES,
+} from '../../../../../shared/attachments'
 import type { FileUIPart } from 'ai'
 import type { StoredDraftAttachment } from '../types'
 
@@ -66,17 +71,16 @@ export type AttachmentError = {
  *
  * Full rationale per format in the module header above.
  */
-export const PROMPT_INPUT_ACCEPT =
-  'image/*,.pdf,.txt,.md,.json,.ts,.tsx,.js,.jsx,.html,.htm,.csv,.tsv,.py,.yaml,.yml,.css,.xml,.sql,.log,.toml,.go,.rs,.docx,.xlsx,.pptx'
+export const PROMPT_INPUT_ACCEPT = CHAT_ATTACHMENT_ACCEPT
 
 /** Max attachments per prompt message. Edit here, not at call sites. */
-export const PROMPT_INPUT_MAX_FILES = 5
+export const PROMPT_INPUT_MAX_FILES = CHAT_ATTACHMENT_MAX_FILES
 
 /** Whether multiple files can be selected. Edit here, not at call sites. */
 export const PROMPT_INPUT_ALLOW_MULTIPLE = true
 
 /** Max size per attachment in bytes (10MB). Edit here, not at call sites. */
-export const PROMPT_INPUT_MAX_FILE_SIZE = 10 * 1024 * 1024
+export const PROMPT_INPUT_MAX_FILE_SIZE = CHAT_ATTACHMENT_MAX_BYTES
 
 export function matchesAccept(file: File, accept?: string): boolean {
   if (!accept || accept.trim() === '') {

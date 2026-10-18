@@ -11,7 +11,15 @@ import { resolveChatModel } from '../../shared/models'
 import { getKeyRequirements } from '../../shared/providers'
 import { requireConversation } from './ownership'
 import { conversationSummary } from './validators'
+import {
+  consumeDraft,
+  deleteDraft,
+  findDraft,
+  validateDraftKey,
+} from './drafts'
+import { ownedUploads, referenceInConversation } from './files'
 import type { Doc } from '../_generated/dataModel'
+import type { UserContent } from 'ai'
 
 function summary(doc: Doc<'conversations'>) {
   return {
@@ -21,6 +29,7 @@ function summary(doc: Doc<'conversations'>) {
     updatedAt: doc.updatedAt,
     status: doc.status,
     error: doc.error,
+    draftKey: doc.draftKey,
   }
 }
 
@@ -58,10 +67,15 @@ export const search = query({
 })
 
 export const get = query({
-  args: { conversationId: v.id('conversations') },
-  returns: conversationSummary,
-  handler: async (ctx, args) =>
-    summary(await requireConversation(ctx, args.conversationId)),
+  args: { conversationId: v.optional(v.id('conversations')) },
+  returns: v.union(conversationSummary, v.null()),
+  handler: async (ctx, args) => {
+    if (!args.conversationId) {
+      await requireKeyOwner(ctx)
+      return null
+    }
+    return summary(await requireConversation(ctx, args.conversationId))
+  },
 })
 
 /** The prompt, thread and scheduled generation commit together. Network retries reuse a receipt. */
@@ -72,6 +86,9 @@ export const send = mutation({
     text: v.string(),
     model: v.string(),
     mode: v.string(),
+    uploadIds: v.optional(v.array(v.id('chatUploads'))),
+    draftKey: v.optional(v.string()),
+    draftVersion: v.optional(v.string()),
   },
   returns: v.object({
     conversationId: v.id('conversations'),
@@ -95,8 +112,17 @@ export const send = mutation({
       }
     }
     const text = args.text.trim()
-    if (!text || text.length > 100_000)
+    const uploads = await ownedUploads(ctx, owner, args.uploadIds ?? [])
+    if ((!text && uploads.length === 0) || text.length > 100_000)
       throw new ConvexError('Enter a message under 100,000 characters.')
+    if (args.draftKey) {
+      validateDraftKey(args.draftKey)
+      const draft = await findDraft(ctx, owner, args.draftKey)
+      if (draft?.conversationId && draft.conversationId !== args.conversationId)
+        throw new ConvexError(
+          'This draft was already sent. Open its conversation from Recents.',
+        )
+    }
     const selected = resolveChatModel(args.model, args.mode)
     if (!selected) throw new ConvexError('Choose a supported model and mode.')
     const keys = await ctx.db
@@ -119,9 +145,16 @@ export const send = mutation({
       const existing = await requireConversation(ctx, conversationId)
       if (existing.activeTurn)
         throw new ConvexError('Wait for the current response or stop it first.')
+      if (
+        args.draftKey &&
+        (existing.draftKey ?? existing._id) !== args.draftKey
+      )
+        throw new ConvexError('This draft belongs to another conversation.')
       threadId = existing.threadId
     } else {
-      const title = text.replace(/\s+/g, ' ').slice(0, 100)
+      const title = (text || uploads[0]?.filename || 'New conversation')
+        .replace(/\s+/g, ' ')
+        .slice(0, 100)
       threadId = await createThread(ctx, components.agent, {
         userId: owner,
         title,
@@ -132,13 +165,40 @@ export const send = mutation({
         title,
         updatedAt: Date.now(),
         status: 'idle',
+        draftKey: args.draftKey,
       })
+    }
+    const content: UserContent = text ? [{ type: 'text', text }] : []
+    for (const upload of uploads) {
+      content.push(
+        upload.mediaType.startsWith('image/')
+          ? {
+              type: 'image',
+              image: new URL(upload.url),
+              mediaType: upload.mediaType,
+            }
+          : {
+              type: 'file',
+              data: new URL(upload.url),
+              mediaType: upload.mediaType,
+              filename: upload.filename,
+            },
+      )
+      await referenceInConversation(ctx, upload._id, conversationId)
     }
     const { messageId, message } = await saveMessage(ctx, components.agent, {
       threadId,
       userId: owner,
-      prompt: text,
+      message: { role: 'user', content },
     })
+    if (args.draftKey)
+      await consumeDraft(
+        ctx,
+        owner,
+        args.draftKey,
+        conversationId,
+        args.draftVersion,
+      )
     await ctx.db.patch('conversations', conversationId, {
       status: 'queued',
       error: undefined,
@@ -204,6 +264,16 @@ export const remove = mutation({
     await ctx.runMutation(components.agent.threads.deleteAllForThreadIdAsync, {
       threadId: conversation.threadId,
     })
+    await deleteDraft(
+      ctx,
+      conversation.ownerTokenIdentifier,
+      conversation.draftKey ?? conversation._id,
+    )
+    await ctx.scheduler.runAfter(
+      0,
+      internal.chat.files.releaseConversationFiles,
+      { conversationId: conversation._id },
+    )
     await ctx.db.delete('conversations', conversation._id)
     return null
   },

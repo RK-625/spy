@@ -103,7 +103,7 @@ The sidebar keeps the original 56px/240px modes and `spy-sidebar-mode` storage
 key. Command/Ctrl+B changes its mode; Command/Ctrl+K opens action search.
 
 The first port covers navigation, search actions, theme preferences, General
-settings and sign-out. Chat composition/history now use Convex Agent with source recents and the ported composer. Attachments, durable drafts, tools, note hierarchy/detail/learning and graph rendering remain to be connected. Conversation presentation is
+settings and sign-out. Chat composition/history now use Convex Agent with source recents and the ported composer. Attachments and durable drafts now use owner-scoped Convex storage. Editing/forking, tools, note hierarchy/detail/learning and graph rendering remain to be connected. Conversation presentation is
 ported under `features/chat/conversation`, with a standalone props interface
 and isolated `/conversation` and `/composer` previews in the workspace fixture.
 The source prompt lives under `features/chat/prompt`; its draft and turn
@@ -132,3 +132,12 @@ Import Motion values directly from `~/styles/tokens/motion`.
 Color values live only in the palette files. Typography and layout values live
 in their token files. Feature styling will be ported with its owning feature;
 this foundation intentionally excludes the original global widget overrides.
+
+Chat draft persistence lives in `features/chat/storage` and `convex/chat/drafts.ts`.
+New-chat URLs include a stable draft key; the composer waits for its saved value
+before mounting and preserves its scope across first-send navigation. Attachment
+bytes upload through an authenticated Convex HTTP action, while mutations receive
+only owned upload IDs. Shared allowlists and limits live in `shared/attachments.ts`.
+`chatFileReferences` retains blobs for drafts/conversations and releases them with
+a grace period. The original data-URL form adapter remains available to isolated
+component previews; production uses reference transport.

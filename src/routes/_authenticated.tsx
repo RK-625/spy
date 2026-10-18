@@ -30,7 +30,10 @@ function AuthenticatedWorkspace() {
           onSignOut={signOut}
           sidebarContent={<ChatRecents />}
           onNewChat={() => {
-            void navigate({ to: '/chat', search: {} })
+            void navigate({
+              to: '/chat',
+              search: { draft: crypto.randomUUID() },
+            })
           }}
         >
           <Outlet />

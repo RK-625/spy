@@ -16,6 +16,9 @@ export interface PromptInputMessage {
   text: string
   files: Array<FileUIPart>
   quotes?: Array<PromptQuote>
+  /** Local snapshot metadata; durable transport sends upload references instead of file bytes. */
+  draftVersion?: string
+  attachmentIds?: Array<string>
 }
 
 export interface ComposerPreferences {

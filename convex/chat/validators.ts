@@ -21,4 +21,26 @@ export const conversationSummary = v.object({
     v.literal('error'),
   ),
   error: v.optional(v.string()),
+  draftKey: v.optional(v.string()),
+})
+
+export const draftContent = v.object({
+  text: v.string(),
+  quotes: v.array(
+    v.object({
+      id: v.string(),
+      sourceMessageId: v.string(),
+      sourceRole: v.union(v.literal('user'), v.literal('assistant')),
+      text: v.string(),
+      plainText: v.string(),
+    }),
+  ),
+  preferences: v.object({
+    model: v.string(),
+    mode: v.string(),
+    useWebSearch: v.boolean(),
+    useExcalidraw: v.boolean(),
+    useBuildMode: v.boolean(),
+  }),
+  uploadIds: v.array(v.id('chatUploads')),
 })

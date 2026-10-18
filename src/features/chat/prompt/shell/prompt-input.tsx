@@ -134,6 +134,7 @@ export type PromptInputProps = Omit<
   /** Max bytes per file. Defaults to `PROMPT_INPUT_MAX_FILE_SIZE`. */
   maxFileSize?: number
   onError?: (err: AttachmentError) => void
+  attachmentTransport?: 'data-url' | 'reference'
   /** Resolve after the turn is accepted; reject to preserve the draft. */
   onSubmit: (
     message: PromptInputMessage,
@@ -148,6 +149,7 @@ export const PromptInput = ({
   maxFiles = PROMPT_INPUT_MAX_FILES,
   maxFileSize = PROMPT_INPUT_MAX_FILE_SIZE,
   onError,
+  attachmentTransport = 'data-url',
   onSubmit,
   children,
   ...props
@@ -158,6 +160,7 @@ export const PromptInput = ({
     attachments,
     textInput,
     quotes,
+    draftVersion,
     __registerFileInput,
     __registerAttachmentValidator,
   } = usePromptInputContext()
@@ -242,7 +245,10 @@ export const PromptInput = ({
             ? await Promise.all(
                 files.map(async (item) => {
                   let finalUrl = item.url
-                  if (item.url.startsWith('blob:')) {
+                  if (
+                    attachmentTransport === 'data-url' &&
+                    item.url.startsWith('blob:')
+                  ) {
                     const dataUrl = await convertBlobUrlToDataUrl(
                       item.url,
                       item.blob,
@@ -262,7 +268,13 @@ export const PromptInput = ({
             : []
 
         await submitHandler.current(
-          { files: convertedFiles, text, quotes: quotes.items },
+          {
+            files: convertedFiles,
+            text,
+            quotes: quotes.items,
+            draftVersion,
+            attachmentIds: files.map((file) => file.id),
+          },
           event,
         )
         const latest = latestDraft.current
@@ -283,7 +295,14 @@ export const PromptInput = ({
         submitting.current = false
       }
     },
-    [attachments, textInput, quotes, onSubmit],
+    [
+      attachments,
+      textInput,
+      quotes,
+      onSubmit,
+      attachmentTransport,
+      draftVersion,
+    ],
   )
 
   // Strip motion-incompatible DOM drag/animation handlers from rest spread
@@ -360,6 +379,7 @@ export interface PromptInputWorkspaceProps {
   providerKeys: Pick<ProviderKeySettings, 'keyHints' | 'loadError' | 'reload'>
   openSettings: (pane: SettingsPane) => void
   tools?: { webSearch?: boolean; build?: boolean; excalidraw?: boolean }
+  attachmentTransport?: 'data-url' | 'reference'
 }
 
 /** Original composer UI. State, persistence and turn acceptance belong to its owner. */
@@ -376,6 +396,7 @@ function PromptInputWorkspaceContent({
   providerKeys,
   openSettings,
   tools = { webSearch: true, build: true, excalidraw: true },
+  attachmentTransport,
 }: PromptInputWorkspaceProps) {
   const {
     attachments,
@@ -526,6 +547,8 @@ function PromptInputWorkspaceContent({
               }),
               files: message.files,
               quotes: message.quotes,
+              draftVersion: message.draftVersion,
+              attachmentIds: message.attachmentIds,
             },
             prefs,
           )
@@ -541,6 +564,8 @@ function PromptInputWorkspaceContent({
             text: answer,
             files: message.files,
             quotes: message.quotes,
+            draftVersion: message.draftVersion,
+            attachmentIds: message.attachmentIds,
           },
           prefs,
         )
@@ -613,7 +638,11 @@ function PromptInputWorkspaceContent({
     <div className="w-full px-4 pb-4 pt-1">
       <div className="chat-input-wrap relative">
         <div className="chat-input-glow" />
-        <PromptInput onSubmit={handleSubmit} onError={handleAttachmentError}>
+        <PromptInput
+          onSubmit={handleSubmit}
+          onError={handleAttachmentError}
+          attachmentTransport={attachmentTransport}
+        >
           <PromptInputHeader>
             <PromptQuoteStrip />
             <PromptInputAttachments />

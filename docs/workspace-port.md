@@ -55,16 +55,15 @@ hints and appends user messages in memory. It never calls a model or backend.
 `features/chat/chat-workspace.tsx` now composes the conversation and composer,
 including the source selection toolbar: completed message excerpts preserve
 Markdown structure and become quote chips in the shared draft. Each conversation
-has a separate selection scope. Production route composition and text chat transport are connected; durable drafts, attachment transport and tools remain.
+has a separate selection scope. Production route composition, chat transport, attachment storage and durable drafts are connected; edit/fork and tools remain.
 
 ## Remaining feature ports
 
-| Feature                                    | Original source                                                                                                   | Required integration                                                                                      |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Chat composer and conversation integration | `src/components/chat/prompt`, `conversation`, `src/app/(workspace)/chat/page.tsx`, `src/contexts/ChatContext.tsx` | Compose the ported renderer with the prompt; Convex state, send/stop/resume, model availability and tools |
-| Recent conversations                       | `src/components/chat/sidebar/recents`                                                                             | User-scoped Convex listing, selection and deletion                                                        |
-| Notes hierarchy, detail and learning       | `src/components/chat/sidebar/notes`, `workspace`, `src/lib/notes`                                                 | Convex notes/relationships and replacement for server-side Falkor reads                                   |
-| Knowledge graph                            | `src/components/graph`, `src/contexts/GraphTopologyContext.tsx`                                                   | Graph topology subscription and browser-only Sigma/WebGL rendering                                        |
+| Feature                                | Original source                                                   | Required integration                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Chat tools, editing/forking and search | `src/components/chat`, `src/contexts/ChatContext.tsx`, `src/ai`   | Tool handlers, memory retrieval/build mode, edit/fork and command-palette history search |
+| Notes hierarchy, detail and learning   | `src/components/chat/sidebar/notes`, `workspace`, `src/lib/notes` | Convex notes/relationships and replacement for server-side Falkor reads                  |
+| Knowledge graph                        | `src/components/graph`, `src/contexts/GraphTopologyContext.tsx`   | Graph topology subscription and browser-only Sigma/WebGL rendering                       |
 
 ## Provider ownership
 
@@ -75,7 +74,7 @@ to setup. The server-only credential helper enforces the same requirements for
 future model and embedding actions, with no shared-key fallback.
 
 See `docs/provider-keys.md` for storage, encryption and integration details.
-Chat execution and note/graph persistence still require their feature ports.
+Chat uses the saved user key; tool integration and note/graph persistence remain.
 
 ## Verification
 
@@ -103,10 +102,20 @@ pending. Provider-key functions are deployed to development deployment
 
 `convex/chat/` now wraps the Agent component with server-derived ownership for every public operation. Conversations have one durable thread, indexed recents/title search, atomic prompt acceptance, request receipts, one active turn, stop fencing and a timeout recovery job. Histories and streaming deltas use bounded Agent pagination. Scheduled generation obtains the selected user's encrypted credential from the stored conversation, decrypts only in a Node action and uses the original provider factory/model choices. The shared catalog lives in `shared/models.ts`.
 
-This backend is deployed to the development target. Production chat route composition, recents UI, attachments, durable drafts, editing/forking and tools remain to connect. Static build/lint/type checks passed; no model calls or account/key tests were run. Streaming is based on the [Convex Agent streaming API](https://docs.convex.dev/agents/streaming).
+This backend is deployed to the development target. Chat route composition, recents, attachments and durable drafts are now connected. Editing/forking and tools remain. Static build/lint/type checks passed; no model calls or account/key tests were run. Streaming is based on the [Convex Agent streaming API](https://docs.convex.dev/agents/streaming).
 
 ## Production chat composition sprint
 
 `features/chat/chat-page.tsx` connects the source UI to the Agent-backed APIs. `/chat?chat=<conversationId>` restores history and subscribes to live deltas; `/chat` starts an unsaved conversation, created on first accepted prompt. The full sidebar renders source recents with pagination and delete; both sidebar modes expose New chat. Messages have earlier-history pagination and saved-key model selection opens the shared provider settings. The authenticated root redirects to Chat.
 
-File upload transport, durable drafts, edit/fork, tools, Notes and Graph remain. Attachment attempts explicitly keep the draft while file transport is pending. Tool controls are hidden until executable handlers exist. No model requests or account/key tests were run.
+Attachment storage and durable drafts are now connected in the following sprint. Edit/fork, tools, Notes and Graph remain. Tool controls are hidden until executable handlers exist. No model requests or account/key tests were run.
+
+## Attachment and saved-draft sprint
+
+`/chat?draft=<uuid>` identifies an unfinished chat. New chat mints a fresh ID; refresh keeps the current one. A conversation is still created only after the first accepted send. Its draft key stays stable across that send, so the editor remains mounted and newer edits survive. Drafts store text, quotes, model/mode/tool preferences and up to five attachment references in owner-scoped Convex records. Saves debounce and coalesce during uploads, serialize per editor and report pending/failure status; retry resubmits the current snapshot. Different editors use last-write-wins semantics. Wait for Saving draft to finish before closing the browser; in-flight uploads and writes have not yet persisted.
+
+The authenticated `/chat/upload` HTTP action accepts up to 10 MB of bytes per file, enforces the same source file allowlist and derives ownership from the session. It registers only storage objects it just created; clients cannot attach arbitrary storage IDs or URLs. Draft and message mutations recheck every upload's owner. File data stays outside mutation arguments. Storage URLs are created on read and included in Agent message content using the documented [manual file-storage approach](https://docs.convex.dev/agents/files). No desktop file/database APIs are copied.
+
+Bounded reference records retain uploads while any draft or conversation uses them. Unreferenced uploads are removed after a 24-hour grace period; conversation deletion releases references in batches. Sending clears only the accepted draft version. Drafts and credentials remain separate: provider keys retain their existing encrypted server-only path.
+
+Production build, lint, application/Convex type checks and development deployment passed. Account/key/upload/model browser or runtime tests were not run; the user will verify manually. Provider file support still depends on the selected model, as in the original workspace. Web publishing remains pending without a configured host.

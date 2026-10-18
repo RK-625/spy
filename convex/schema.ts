@@ -1,9 +1,37 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { encryptedKey, providerId } from './providers/validators'
-import { conversationSummary, turn } from './chat/validators'
+import { conversationSummary, draftContent, turn } from './chat/validators'
 
 export default defineSchema({
+  chatDrafts: defineTable({
+    ownerTokenIdentifier: v.string(),
+    draftKey: v.string(),
+    conversationId: v.optional(v.id('conversations')),
+    writerId: v.string(),
+    sequence: v.number(),
+    version: v.string(),
+    ...draftContent.fields,
+    updatedAt: v.number(),
+  }).index('by_ownerTokenIdentifier_and_draftKey', [
+    'ownerTokenIdentifier',
+    'draftKey',
+  ]),
+  chatUploads: defineTable({
+    ownerTokenIdentifier: v.string(),
+    storageId: v.id('_storage'),
+    filename: v.string(),
+    mediaType: v.string(),
+    size: v.number(),
+  }),
+  chatFileReferences: defineTable({
+    uploadId: v.id('chatUploads'),
+    draftId: v.optional(v.id('chatDrafts')),
+    conversationId: v.optional(v.id('conversations')),
+  })
+    .index('by_uploadId_and_conversationId', ['uploadId', 'conversationId'])
+    .index('by_draftId', ['draftId'])
+    .index('by_conversationId', ['conversationId']),
   conversations: defineTable({
     ...conversationSummary.omit('_id').fields,
     ownerTokenIdentifier: v.string(),
