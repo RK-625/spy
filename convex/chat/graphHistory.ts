@@ -8,7 +8,8 @@
 export const GRAPH_MESSAGE_MAX_CHARS = 48_000
 /** Model context window: newest rows, bounded by count and total size. */
 export const GRAPH_HISTORY_MAX_MESSAGES = 200
-export const GRAPH_HISTORY_MAX_CHARS = 2_000_000
+// About 75k tokens: fits every supported model's context with room for tools and output.
+export const GRAPH_HISTORY_MAX_CHARS = 300_000
 /** Source graph-agent step budget. */
 export const GRAPH_AGENT_MAX_STEPS = 15
 

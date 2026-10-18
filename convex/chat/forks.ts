@@ -18,6 +18,9 @@ import type { Id } from '../_generated/dataModel'
 
 const workflow = new WorkflowManager(components.workflow)
 const forkResult = v.object({ conversationId: v.id('conversations') })
+/** Bounded wait for the source's maintainer: 20 checks, 30 seconds apart (about 10 minutes). */
+const GRAPH_WAIT_CHECKS = 20
+const GRAPH_WAIT_MS = 30 * 1000
 
 /** Reserve the destination and its preferences atomically; only server-owned threads reach the copier. */
 export const create = mutation({
@@ -144,6 +147,19 @@ export const copy = workflow
     }
     // Graph history for the selected prefix: every turn up to the forked reply's order.
     if (args.upToOrder !== undefined) {
+      // Let maintainer jobs for the copied turns finish so the fork gets their full history.
+      // After the bounded wait, copy whatever exists.
+      for (let check = 0; check < GRAPH_WAIT_CHECKS; check++) {
+        const pending: boolean = await step.runQuery(
+          internal.chat.graph.forkPending,
+          {
+            sourceConversationId: args.sourceConversationId,
+            upToOrder: args.upToOrder,
+          },
+        )
+        if (!pending) break
+        await step.sleep(GRAPH_WAIT_MS)
+      }
       cursor = null
       done = false
       while (!done) {

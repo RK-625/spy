@@ -272,7 +272,7 @@ export const claim = internalMutation({
       !key ||
       !getKeyRequirements(keys.map((entry) => entry.provider)).ready
     ) {
-      await settle(ctx, job, 'failed')
+      await settle(ctx, job, 'skipped')
       return null
     }
     await ctx.db.patch('graphJobs', job._id, {
@@ -436,6 +436,27 @@ export const history = query({
 
 // ---------------------------------------------------------------------------
 // Fork and delete
+
+/** True while a maintainer job for a turn at or before the fork point is still queued or running. */
+export const forkPending = internalQuery({
+  args: {
+    sourceConversationId: v.id('conversations'),
+    upToOrder: v.number(),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, { sourceConversationId, upToOrder }) => {
+    for (const jobStatus of ['queued', 'running'] as const) {
+      const jobs = await ctx.db
+        .query('graphJobs')
+        .withIndex('by_conversationId_and_status', (q) =>
+          q.eq('conversationId', sourceConversationId).eq('status', jobStatus),
+        )
+        .take(100)
+      if (jobs.some((job) => job.order <= upToOrder)) return true
+    }
+    return false
+  },
+})
 
 /** Copy the source's graph history for turns up to and including the forked order. */
 export const copyHistory = internalMutation({

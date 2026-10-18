@@ -58,7 +58,8 @@ export function GraphPane({
     previousChatIdRef.current = conversationId
     if (sameChat && previousStatus === 'running' && graph.status === 'failed')
       toast.error('Graph update failed', {
-        description: 'Chat is unaffected. It retries on your next message.',
+        description:
+          'Chat is unaffected. Some changes from this turn may not be saved.',
       })
   }, [conversationId, graph.status])
 
