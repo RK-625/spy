@@ -196,3 +196,9 @@ Implemented by worktree-isolated subagents per `.claude/rules/orchestrator.md`; 
 
 - Added the Nitro Vercel preset (`fe0957f`) and created the Vercel project `spy` (GitHub `RK-625/spy`, Bun install, `bun run build`). Production deployed at https://spy-miscellaneous1.vercel.app against the **development** Convex deployment `secret-nightingale-447` (no prod backend yet). `VITE_CONVEX_URL`, `VITE_CONVEX_SITE_URL` and `VITE_SITE_URL` are set on the project; Convex `SITE_URL` now points at the Vercel URL, so localhost sign-in no longer works against this backend. Vercel Auth protection was disabled so the site is public.
 - Validation: deployment READY; `/login` returns 200 with no console errors, and `/`, `/chat`, `/notes`, `/graph` redirect to `/login` when signed out. No account creation, sign-in, key or model tests were performed. Open: dedicated prod Convex deployment; `/api/auth/get-session` returned 404 on the live site (unverified whether that path is expected).
+
+## 2026-10-19 — Fix Convex URLs and add demo user
+
+- Corrected the Vercel env vars: the dev deployment's real hosts are `secret-nightingale-447.ap-southeast-2.convex.cloud` / `.convex.site` (the guessed short hosts returned 404). Redeployed; the live bundle now points at the correct host.
+- Added `convex/demoUser.ts` (`internal.demoUser.create`), an internal action that provisions a Better Auth credential user, since public signup is disabled. Created one demo user on `secret-nightingale-447`; its credentials are only in the gitignored `.env.local` (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`). Remove the action once real accounts exist.
+- Validation: typecheck, dev deployment and user creation succeeded; Vercel deployment READY. Sign-in through the live site has not been tested.
