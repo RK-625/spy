@@ -20,14 +20,30 @@ Their feature content is still blank. Provider settings now gate access until th
 and at least one chat-provider key. Google can satisfy both requirements. No
 conversations, notes, graphs, keys, or user records were migrated or fabricated.
 
+## Conversation component sprint
+
+Ported the source message/conversation components to
+`src/features/chat/conversation/`: streaming Markdown with code, CJK, math and
+Mermaid plugins, attachment previews, reasoning/tool timelines, sources,
+clipboard feedback, message action rails and scroll-to-latest behavior. The
+view accepts messages and callbacks; it does not fetch keys or call models.
+Preserved the source widget styles and dot-matrix glyphs. Loading labels are
+deterministic during hydration; keyboard and reduced-motion handling were
+adapted for the web.
+
+An isolated presentation preview lives at `http://localhost:3016/conversation`
+when running the existing workspace fixture. It uses local presentation data
+only, with no account/key/backend imports. The production routes do not yet
+mount this renderer; the composer and durable conversation transport come next.
+
 ## Remaining feature ports
 
-| Feature                              | Original source                                                                                                   | Required integration                                                                      |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Chat prompt and conversation         | `src/components/chat/prompt`, `conversation`, `src/app/(workspace)/chat/page.tsx`, `src/contexts/ChatContext.tsx` | Convex conversation state, send/stop/resume transport, model availability and tool wiring |
-| Recent conversations                 | `src/components/chat/sidebar/recents`                                                                             | User-scoped Convex listing, selection and deletion                                        |
-| Notes hierarchy, detail and learning | `src/components/chat/sidebar/notes`, `workspace`, `src/lib/notes`                                                 | Convex notes/relationships and replacement for server-side Falkor reads                   |
-| Knowledge graph                      | `src/components/graph`, `src/contexts/GraphTopologyContext.tsx`                                                   | Graph topology subscription and browser-only Sigma/WebGL rendering                        |
+| Feature                                    | Original source                                                                                                   | Required integration                                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Chat composer and conversation integration | `src/components/chat/prompt`, `conversation`, `src/app/(workspace)/chat/page.tsx`, `src/contexts/ChatContext.tsx` | Compose the ported renderer with the prompt; Convex state, send/stop/resume, model availability and tools |
+| Recent conversations                       | `src/components/chat/sidebar/recents`                                                                             | User-scoped Convex listing, selection and deletion                                                        |
+| Notes hierarchy, detail and learning       | `src/components/chat/sidebar/notes`, `workspace`, `src/lib/notes`                                                 | Convex notes/relationships and replacement for server-side Falkor reads                                   |
+| Knowledge graph                            | `src/components/graph`, `src/contexts/GraphTopologyContext.tsx`                                                   | Graph topology subscription and browser-only Sigma/WebGL rendering                                        |
 
 ## Provider ownership
 

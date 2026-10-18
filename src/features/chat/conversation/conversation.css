@@ -1,0 +1,485 @@
+/* ── Markdown: Headings (capped to 3 levels) ── */
+.group.is-assistant h1,
+.group.is-assistant h2,
+.group.is-assistant h3 {
+  font-family: var(--font-display);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.group.is-assistant h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0.6em 0 0.3em !important;
+}
+.group.is-assistant h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-tinted);
+  margin: 0.5em 0 0.25em !important;
+}
+.group.is-assistant h3 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--lavender);
+  margin: 0.4em 0 0.2em !important;
+}
+.group.is-assistant h4,
+.group.is-assistant h5,
+.group.is-assistant h6 {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--lavender-muted);
+  margin: 0.3em 0 0.2em !important;
+}
+
+/* ── Markdown: Body ── */
+.group.is-assistant p {
+  margin: 0.35em 0;
+  line-height: 1.72;
+  color: var(--text-primary);
+}
+.group.is-assistant strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+.group.is-assistant em {
+  color: var(--lavender);
+}
+.group.is-assistant ul,
+.group.is-assistant ol {
+  padding-left: 1.3rem;
+  margin: 0.4em 0;
+}
+.group.is-assistant li {
+  margin: 0.15em 0;
+  line-height: 1.65;
+}
+.group.is-assistant li::marker {
+  color: var(--list-marker);
+}
+
+/* ── Code Blocks — single clean container ── */
+.group.is-assistant [data-streamdown='code-block'] {
+  margin: 0.5em 0 !important;
+}
+[data-streamdown='code-block'] {
+  background: var(--surface-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.825rem;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+[data-streamdown='code-block']:hover [data-streamdown='code-block-actions'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-streamdown='code-block-header'] {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  padding: 0;
+  border-bottom: none;
+  background: transparent;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  opacity: 1;
+}
+
+[data-streamdown='code-block-body'] {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.65rem 0.75rem;
+}
+
+[data-streamdown='code-block-body'] pre {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+[data-streamdown='code-block-body'] pre code {
+  background: transparent;
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+/* Streamdown highlights with github-light (--sdm-c) and github-dark (--shiki-dark). */
+[data-streamdown='code-block-body'] code span {
+  color: var(--sdm-c, inherit);
+}
+
+.dark [data-streamdown='code-block-body'] code span {
+  color: var(--shiki-dark, var(--sdm-c, inherit));
+}
+
+[data-streamdown$='actions'] {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  backdrop-filter: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+
+[data-streamdown='code-block-copy-button'],
+[data-streamdown='table-wrapper'] > div:first-child > div.relative > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: var(--radius) !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-tinted) !important;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+[data-streamdown='code-block-copy-button']:hover,
+[data-streamdown='table-wrapper']
+  > div:first-child
+  > div.relative
+  > button:hover {
+  background: var(--surface-hover) !important;
+  color: var(--primary-hover) !important;
+}
+
+[data-streamdown='code-block-copy-button'] svg,
+[data-streamdown='table-wrapper']
+  > div:first-child
+  > div.relative
+  > button
+  svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke-width: 2.5px !important;
+  shape-rendering: crispEdges !important;
+}
+
+/* Table Copy Dropdown Menu */
+[data-streamdown='table-wrapper'] .absolute.top-full {
+  background: var(--surface-input-opaque) !important;
+  border: 1px solid var(--border-strong) !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.25rem !important;
+}
+
+[data-streamdown='table-wrapper'] .absolute.top-full button {
+  color: var(--text-tinted) !important;
+  background: transparent !important;
+  border-radius: calc(var(--radius) - 2px) !important;
+  padding: 0.35rem 0.5rem !important;
+}
+
+[data-streamdown='table-wrapper'] .absolute.top-full button:hover {
+  background: var(--surface-selected) !important;
+  color: var(--primary-hover) !important;
+}
+
+/* ── Code: inline and pre ── */
+.group.is-assistant code:not(pre code) {
+  background: var(--surface-hover);
+  color: var(--lavender);
+  padding: 0.12em 0.45em;
+  font-family:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  border: 1px solid var(--code-inline-border);
+}
+.group.is-assistant pre {
+  background: transparent;
+  border: none;
+  padding: 0;
+  overflow-x: auto;
+  margin: 0;
+}
+.group.is-assistant pre code {
+  font-family:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ── Markdown: Misc ── */
+.group.is-assistant blockquote {
+  border-left: 2px solid var(--accent-border);
+  padding: 0.3em 0 0.3em 1em;
+  margin: 0.5em 0;
+  color: var(--text-secondary);
+}
+.group.is-assistant a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--accent-decoration);
+  transition:
+    color 0.2s,
+    text-decoration-color 0.2s;
+}
+.group.is-assistant a:hover {
+  color: var(--primary-hover);
+  text-decoration-color: var(--primary-hover);
+}
+.group.is-assistant hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 0.8em 0;
+}
+/* ── Streamdown Table Overrides ── */
+[data-streamdown='table-wrapper'] {
+  background: var(--surface-input) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 0.825rem !important;
+  padding: 0.5rem !important;
+  margin: 0.75em 0 !important;
+  position: relative !important;
+}
+
+[data-streamdown='table-wrapper'] > div:first-child {
+  position: absolute !important;
+  top: 0.75rem !important;
+  right: 0.75rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+[data-streamdown='table-wrapper']:hover > div:first-child {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-streamdown='table-wrapper'] > div.border-collapse {
+  background: transparent !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 0.5rem !important;
+  margin-top: 0 !important;
+}
+
+[data-streamdown='table'] {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 !important;
+  font-size: 0.85em;
+}
+
+[data-streamdown='table-header'] {
+  background: var(--surface-header) !important;
+}
+
+[data-streamdown='table-header-cell'] {
+  color: var(--lavender) !important;
+  font-weight: 500 !important;
+  text-align: left;
+  padding: 0.6rem 0.8rem !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+[data-streamdown='table-cell'] {
+  color: var(--text-tinted) !important;
+  padding: 0.6rem 0.8rem !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border-faint) !important;
+}
+
+[data-streamdown='table-row']:last-child [data-streamdown='table-cell'] {
+  border-bottom: none !important;
+}
+
+[data-streamdown='table-row']:hover {
+  background: var(--surface-row-hover) !important;
+}
+
+/* Disable Streamdown's ugly default divide-y borders */
+[data-streamdown='table-body'].divide-y > :not([hidden]) ~ :not([hidden]),
+[data-streamdown='table'].divide-y > :not([hidden]) ~ :not([hidden]) {
+  border-top-width: 0 !important;
+}
+
+/* ── Streamdown Mermaid Overrides ── */
+[data-streamdown='mermaid-block'] {
+  background: var(--surface-input) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 0.825rem !important;
+  padding: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  gap: 0 !important;
+}
+
+/* Float the "mermaid" label */
+[data-streamdown='mermaid-block'] > div:first-child {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  padding: 0;
+  background: transparent;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+}
+
+/* Strip the default inner border/background and push diagram down */
+[data-streamdown='mermaid-block'] > div.rounded-md.border {
+  background: transparent !important;
+  border: none !important;
+  margin-top: 2rem !important;
+}
+
+/* Prevent diagram relative container from collapsing */
+[data-streamdown='mermaid'] > div.relative {
+  display: block !important;
+  position: relative !important;
+  height: auto !important;
+  min-height: 200px !important;
+}
+
+/* Strip the sticky wrapper spacing */
+[data-streamdown='mermaid-block'] > div.sticky {
+  position: absolute !important;
+  top: 0.4rem !important;
+  right: 0.4rem !important;
+  margin: 0 !important;
+  height: auto !important;
+  z-index: 10;
+}
+
+/* Restyle the action bar container */
+[data-streamdown='mermaid-block-actions'] {
+  background: transparent !important;
+  border: none !important;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+[data-streamdown='mermaid-block']:hover
+  [data-streamdown='mermaid-block-actions'] {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Style the buttons exactly like the code-block copy button */
+[data-streamdown='mermaid-block-actions'] button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: var(--radius) !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-tinted) !important;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+[data-streamdown='mermaid-block-actions'] button:hover {
+  background: var(--surface-hover) !important;
+  color: var(--primary-hover) !important;
+}
+
+/* ── Retheme Mermaid SVG Elements for Spy Dark Theme ── */
+[data-streamdown='mermaid'] svg .node rect,
+[data-streamdown='mermaid'] svg .node circle,
+[data-streamdown='mermaid'] svg .node ellipse,
+[data-streamdown='mermaid'] svg .node polygon,
+[data-streamdown='mermaid'] svg .node path {
+  fill: var(--diagram-node-fill) !important;
+  stroke: var(--diagram-node-stroke) !important;
+  stroke-width: 1.5px !important;
+}
+
+[data-streamdown='mermaid'] svg .node .label,
+[data-streamdown='mermaid'] svg .node .label text,
+[data-streamdown='mermaid'] svg .node .label span,
+[data-streamdown='mermaid'] svg .node .label p {
+  color: var(--text-primary) !important;
+  fill: var(--text-primary) !important;
+}
+
+[data-streamdown='mermaid'] svg .edgePath .path {
+  stroke: var(--diagram-edge) !important;
+  stroke-width: 1.5px !important;
+}
+
+[data-streamdown='mermaid'] svg .marker,
+[data-streamdown='mermaid'] svg .arrowheadPath {
+  fill: var(--diagram-edge) !important;
+  stroke: var(--diagram-edge) !important;
+}
+
+[data-streamdown='mermaid'] svg .edgeLabel rect {
+  fill: var(--surface-input-opaque) !important;
+}
+
+[data-streamdown='mermaid'] svg .labelBkg,
+[data-streamdown='mermaid'] svg .edgeLabel rect,
+[data-streamdown='mermaid'] svg .edgeLabel {
+  fill: var(--surface-input-opaque) !important;
+  background-color: var(--surface-input-opaque) !important;
+  stroke: var(--border-strong) !important;
+  rx: 4px !important;
+  ry: 4px !important;
+  border-radius: 4px !important;
+  color: var(--lavender) !important;
+}
+
+[data-streamdown='mermaid'] svg .edgeLabel span,
+[data-streamdown='mermaid'] svg .edgeLabel p,
+[data-streamdown='mermaid'] svg .edgeLabel div {
+  color: var(--lavender) !important;
+  background-color: transparent !important;
+}
+
+/* Composer Markdown uses the same typography, surfaces and spacing as notes. */
+
+.group.is-user [data-message-content] {
+  background: linear-gradient(
+    135deg,
+    var(--bubble-user-from),
+    var(--bubble-user-to)
+  );
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  max-width: 70%;
+  margin-left: auto;
+}
+
+/* Keep floating widget actions reachable by keyboard and on touch devices. */
+[data-streamdown]:focus-within > [data-streamdown$='actions'],
+[data-streamdown='code-block']:focus-within
+  [data-streamdown='code-block-actions'],
+[data-streamdown='table-wrapper']:focus-within > div:first-child,
+[data-streamdown='mermaid-block']:focus-within
+  [data-streamdown='mermaid-block-actions'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  [data-streamdown$='actions'],
+  [data-streamdown='table-wrapper'] > div:first-child {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

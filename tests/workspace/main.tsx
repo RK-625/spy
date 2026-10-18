@@ -6,9 +6,16 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
+import { Suspense, lazy } from 'react'
 import { AppThemeProvider } from '~/components/theme/theme-provider'
 import { WorkspaceShell } from '~/components/workspace/workspace-shell'
 import '~/styles/app.css'
+
+const ConversationPreview = lazy(() =>
+  import('./conversation-preview').then((module) => ({
+    default: module.ConversationPreview,
+  })),
+)
 
 // Isolated UI fixture. It never imports the application router, auth client,
 // session guard, or backend and cannot bypass the production login flow.
@@ -38,7 +45,24 @@ const children = (['/', '/chat', '/notes', '/graph'] as const).map((path) =>
     ),
   }),
 )
-const router = createRouter({ routeTree: rootRoute.addChildren(children) })
+const conversationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/conversation',
+  component: () => (
+    <Suspense
+      fallback={
+        <p role="status" className="p-4 text-sm text-lavender-muted">
+          Loading conversation preview…
+        </p>
+      }
+    >
+      <ConversationPreview />
+    </Suspense>
+  ),
+})
+const router = createRouter({
+  routeTree: rootRoute.addChildren([...children, conversationRoute]),
+})
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing workspace fixture root')
 createRoot(root).render(<RouterProvider router={router} />)

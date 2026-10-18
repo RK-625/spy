@@ -15,7 +15,7 @@
 
   /* ── Borders — ink (#3A2470) at various opacities ── */
   --border-faint: rgba(58, 36, 112, 0.06);
-  --border-subtle: rgba(58, 36, 112, 0.10);
+  --border-subtle: rgba(58, 36, 112, 0.1);
   --border-default: rgba(58, 36, 112, 0.12);
   --border-medium: rgba(58, 36, 112, 0.14);
   --border-strong: rgba(58, 36, 112, 0.18);
@@ -25,11 +25,11 @@
   --surface-hover: rgba(122, 82, 209, 0.07);
   --surface-focus: rgba(122, 82, 209, 0.16);
   --focus-glow: rgba(122, 82, 209, 0.06);
-  --code-inline-border: rgba(58, 36, 112, 0.10);
+  --code-inline-border: rgba(58, 36, 112, 0.1);
 
   /* ── Accent washes — lavender (#7A52D1) at various opacities ── */
   --accent-selection: rgba(122, 82, 209, 0.18);
-  --accent-decoration: rgba(122, 82, 209, 0.30);
+  --accent-decoration: rgba(122, 82, 209, 0.3);
   --accent-border: rgba(122, 82, 209, 0.35);
   --list-marker: rgba(122, 82, 209, 0.45);
   --glow-line: rgba(122, 82, 209, 0.25);
@@ -38,12 +38,12 @@
   --surface-chat: #fbf9f5;
   --surface-elevated: #f0ebe3;
   /* Frosted input / elevated panels on chat surface */
-  --surface-input: rgba(255, 255, 255, 0.70);
+  --surface-input: rgba(255, 255, 255, 0.7);
   --surface-input-strong: rgba(255, 255, 255, 0.88);
   --surface-input-opaque: rgba(255, 255, 255, 0.96);
   --surface-chat-veil: rgba(251, 249, 245, 0.6);
   --surface-chat-panel: rgba(251, 249, 245, 0.85);
-  --shadow-elevated: rgba(29, 24, 48, 0.10);
+  --shadow-elevated: rgba(29, 24, 48, 0.1);
 
   /* ── Lavender scale (solid) ── */
   --lavender: #7a52d1;
@@ -56,7 +56,7 @@
   --pill-source-border: rgba(122, 82, 209, 0.18);
   --pill-source-text-hover: #3a2470;
   --pill-source-border-hover: rgba(122, 82, 209, 0.35);
-  --pill-status-bg: rgba(122, 82, 209, 0.10);
+  --pill-status-bg: rgba(122, 82, 209, 0.1);
 
   /* ── Status ── */
   /* Verified state (e.g. a provider key the provider accepted). The one green in the system. */
@@ -66,10 +66,10 @@
   --text-tinted: #33294f;
   --surface-row-hover: rgba(122, 82, 209, 0.04);
   --surface-header: rgba(122, 82, 209, 0.05);
-  --surface-selected: rgba(122, 82, 209, 0.10);
+  --surface-selected: rgba(122, 82, 209, 0.1);
   --thread-line: rgba(122, 82, 209, 0.25);
   --diagram-node-fill: rgba(255, 255, 255, 0.9);
-  --diagram-node-stroke: rgba(122, 82, 209, 0.40);
+  --diagram-node-stroke: rgba(122, 82, 209, 0.4);
   --diagram-edge: rgba(58, 36, 112, 0.45);
   --bubble-user-from: rgba(233, 225, 247, 0.95);
   --bubble-user-to: rgba(237, 230, 247, 0.85);
@@ -133,4 +133,52 @@
   --sidebar-accent-foreground: #2e1c5c;
   --sidebar-border: rgba(58, 36, 112, 0.12);
   --sidebar-ring: #3a2470;
+}
+
+/* Original dot-matrix decorative presets, shared by both themes. */
+:root {
+  --dmx-solid-mint-fill: #34d399;
+  --dmx-solid-mint-glow: #34d399;
+  --dmx-grad-sunset-fill: linear-gradient(
+    135deg,
+    #ff5f6d 0%,
+    #ffc371 52%,
+    #ffe29a 100%
+  );
+  --dmx-grad-sunset-glow: #ff8b73;
+  --dmx-grad-ocean-fill: linear-gradient(
+    140deg,
+    #00c6ff 0%,
+    #0072ff 48%,
+    #4facfe 100%
+  );
+  --dmx-grad-ocean-glow: #2f8fff;
+  --dmx-grad-neon-fill: linear-gradient(
+    145deg,
+    #b4ff39 0%,
+    #39ffb6 46%,
+    #00d4ff 100%
+  );
+  --dmx-grad-neon-glow: #59ffc8;
+  --dmx-grad-aurora-fill: linear-gradient(
+    145deg,
+    #ff3cac 0%,
+    #784ba0 45%,
+    #2b86c5 100%
+  );
+  --dmx-grad-aurora-glow: #9c64bf;
+  --dmx-grad-fire-fill: linear-gradient(
+    145deg,
+    #ff512f 0%,
+    #dd2476 45%,
+    #ffb347 100%
+  );
+  --dmx-grad-fire-glow: #f96a5f;
+  --dmx-grad-prism-fill: linear-gradient(
+    145deg,
+    #12c2e9 0%,
+    #c471ed 45%,
+    #f64f59 100%
+  );
+  --dmx-grad-prism-glow: #9e7de8;
 }

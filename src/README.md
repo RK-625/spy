@@ -104,7 +104,9 @@ key. Command/Ctrl+B changes its mode; Command/Ctrl+K opens action search.
 
 The first port covers navigation, search actions, theme preferences, General
 settings and sign-out. Chat composition/history, note hierarchy/detail/learning,
-and graph rendering remain to be ported. Provider/embedding/tool settings now
+and graph rendering remain to be connected. Conversation presentation is
+ported under `features/chat/conversation`, with a standalone props interface
+and an isolated `/conversation` preview in the workspace fixture. Provider/embedding/tool settings now
 use encrypted, user-scoped Convex storage through `features/providers`. Only
 masked key hints reach the browser after saving. Google embeddings and at least
 one chat provider are required; a Google key can satisfy both.
@@ -116,7 +118,9 @@ Run `bun run test:workspace:dev` to inspect the same shared UI at
 `http://localhost:3016`. This is a separate Vite component fixture under
 `tests/workspace`, with a synthetic identity and simulated sign-out failure.
 It never imports the application router or auth client, creates no users, and
-does not bypass login in the app. It is excluded from production bundling.
+does not bypass login in the app. The `/conversation` fixture previews the
+ported message renderer using presentation data only. It is excluded from
+production bundling.
 
 Use semantic utilities such as `bg-background`, `text-text-primary`,
 `border-border-subtle`, `font-display`, and `px-prompt-body-x`. For canvas or

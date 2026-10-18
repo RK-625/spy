@@ -11,3 +11,10 @@
 
 /* Also scan source components when rendered by the isolated UI fixture. */
 @source '../';
+
+/* Installed Markdown renderers used by the ported conversation. */
+@source '../../node_modules/streamdown/dist/*.js';
+@source '../../node_modules/@streamdown/code/dist/*.js';
+@source '../../node_modules/@streamdown/cjk/dist/*.js';
+@source '../../node_modules/@streamdown/math/dist/*.js';
+@source '../../node_modules/@streamdown/mermaid/dist/*.js';
