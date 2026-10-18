@@ -27,3 +27,9 @@
 - Connected to the user's development deployment `secret-nightingale-447`. Set missing backend `SITE_URL` to `http://localhost:3000` and generated `BETTER_AUTH_SECRET` directly for deployment storage; no secret values were printed or committed.
 - Verified both variable names exist and `bunx convex dev --once --typecheck enable` completed with “Convex functions ready”. Synced the generated Better Auth component API and typed environment declarations.
 - Better Auth server, HTTP endpoints, and sign-in method configuration remain the next implementation step.
+
+## 2026-10-18 — Frontend foundation packages
+
+- Installed Motion (matching the original app's v12 major), Radix UI, Lucide, class-variance-authority, clsx, tailwind-merge, and tw-animate-css with Bun. Added the original Inter, Unbounded, and VT323 fonts at 5.3.0 and the shadcn CLI as a development dependency. Updated the Bun lockfile; components, styles, routes, and auth wiring are separate steps.
+- Validation: frozen-lockfile install, runtime import and CSS/font asset checks, shadcn CLI version check, standalone ESLint, client/SSR Vite builds, and `git diff --check` passed. Full typecheck (and therefore the combined build/lint scripts) remains blocked by the existing `src/router.tsx:33` unknown error access.
+- Web deployment pending: no web hosting target is configured in this repository; this sprint changes dependency setup only.
