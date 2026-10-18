@@ -168,4 +168,11 @@ Vector search runs only in actions and returns similarity rather than distance, 
 
 ## Notes sidebar and detail
 
-`src/features/notes/` ports the source family sidebar, note header, workspace and read-only Milkdown document. `useNotesTopology` subscribes to `memory.topology.get` and builds the shared forest (`shared/notes/hierarchy.ts`); `/notes/$noteId` reads `memory.topology.memoryById`. Both are reactive, so build-mode writes appear without refresh. The authenticated layout picks the sidebar body by route. Learning sessions are the remaining Notes port.
+`src/features/notes/` ports the source family sidebar, note header, workspace and read-only Milkdown document. `useNotesTopology` subscribes to `memory.topology.get` and builds the shared forest (`shared/notes/hierarchy.ts`); `/notes/$noteId` reads `memory.topology.memoryById`. Both are reactive, so build-mode writes appear without refresh. The authenticated layout picks the sidebar body by route. Learning sessions are ported on the same note detail.
+
+## Graph view, maintainer and Excalidraw
+
+- `/graph` renders `src/features/graph/` (Sigma + ForceAtlas2, browser-only) over `memory.topology.get`, with a read-only inspect dialog.
+- `convex/chat/graph.ts` and `graphAgent.ts` run the background graph maintainer after normal turns, store per-chat `graphMessages`, and serve the chat graph pane (`src/features/chat/graph-pane/`). Forks copy history up to the forked turn.
+- `convex/chat/excalidraw.ts`, `mcpApps.ts` and `mcpAppTools.ts` connect the Excalidraw MCP server per enabled turn and cache its app resources; `src/features/chat/mcp-app/` embeds diagrams in a double sandboxed, opaque-origin iframe.
+- All source features are now ported. Runtime verification and web hosting remain.
