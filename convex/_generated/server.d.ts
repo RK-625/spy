@@ -31,6 +31,7 @@ type Env = {
   readonly CONVEX_CLOUD_URL: string;
   readonly CONVEX_SITE_URL: string;
   readonly BETTER_AUTH_SECRET: string;
+  readonly PROVIDER_KEYS_ENCRYPTION_KEY: string;
   readonly SITE_URL: string;
 };
 
