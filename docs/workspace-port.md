@@ -141,3 +141,13 @@ The source globe toggle is connected to each accepted turn. Both the user's togg
 The [Exa Search API](https://exa.ai/docs/reference/search) receives the same source options: five results with text limited to 5,000 characters per result. The app validates query input, bounds response bytes and fields, permits HTTP(S) result links, cancels on the turn signal/25-second timeout and returns safe failures without provider bodies. Agent persists tool calls/results and runs the source 25-step search budget. The ported reasoning timeline shows the query, result links and actionable search failures; the model can cite returned URLs. Clicking the globe without a key opens Tools settings.
 
 Build, lint/type checks and development deployment passed. No Exa or model requests, account/key tests or browser/runtime tests were run. Ask-user interaction, memory retrieval/writes, build mode and Excalidraw remain to connect, alongside Notes and Graph.
+
+## Ask-user interaction
+
+The source `askUserQuestion` is registered as a model tool with no execute handler. It yields to the user with a concrete question, two to five choices and an optional write-in. Agent stores the call in conversation history; the existing composer derives its pending question from the last assistant message, so reloading or reopening the conversation restores the options. Questions and options share a bounded input parser between model validation and UI restoration.
+
+Selecting a choice or submitting a custom answer sends the original `Q: … / A: …` text as a normal user turn. Only the accepted draft version clears; edits made during acceptance survive. Agent's version-matched history loader filters unanswered tool calls from subsequent model context, while the Q/A message retains the question and answer. The normal eight-step/source search 25-step budgets apply.
+
+Dismiss persists the original `{ status: "cancelled" }` tool output in the same Agent order, with no new generation. Its mutation derives conversation ownership, validates the selected assistant/order/call, refuses stale questions and is idempotent after an existing result. Dismissal waits for an in-progress fork to finish so it cannot change the copied reply mid-copy. History displays a completed Question for you step rather than an indefinitely running tool.
+
+Production build, lint/application/Convex type checks and development deployment passed. No account/key/provider/browser/runtime tests or model requests were run. Memory retrieval/writes, build mode, Excalidraw, Notes and Graph remain to port.

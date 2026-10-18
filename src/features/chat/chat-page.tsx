@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import { ChatWorkspace } from './chat-workspace'
 import { useSavedDraft } from './storage/use-saved-draft'
+import { getPendingAskUserQuestion } from './ask-user-question'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import type { ComposerPreferences, PromptInputMessage } from './types'
@@ -190,6 +191,7 @@ function LiveChat({
   const send = useMutation(api.chat.conversations.send)
   const stop = useMutation(api.chat.conversations.stop)
   const createFork = useMutation(api.chat.forks.create)
+  const dismissQuestion = useMutation(api.chat.questions.dismiss)
   const forkInFlight = useRef(false)
   const [forkPending, setForkPending] = useState(false)
   const history = useThreadMessages(
@@ -204,6 +206,10 @@ function LiveChat({
   const messages = useMemo(
     () => toUIMessages(history.results),
     [history.results],
+  )
+  const pendingAsk = useMemo(
+    () => getPendingAskUserQuestion(messages),
+    [messages],
   )
 
   async function fork(messageId: string, preferences: ComposerPreferences) {
@@ -302,6 +308,15 @@ function LiveChat({
       <ChatWorkspace
         conversationId={draftKey}
         messages={messages}
+        pendingAsk={pendingAsk}
+        dismissPendingAsk={async () => {
+          if (conversation && pendingAsk)
+            await dismissQuestion({
+              conversationId: conversation._id,
+              messageId: pendingAsk.messageId,
+              toolCallId: pendingAsk.toolCallId,
+            })
+        }}
         status={status}
         initialDraft={draft.initialDraft}
         onDraftChange={draft.onDraftChange}

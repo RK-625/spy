@@ -123,6 +123,7 @@ function ThoughtSteps({
         const name =
           part.type === 'dynamic-tool' ? part.toolName : part.type.slice(5)
         const isSearch = name === 'webSearch'
+        const isQuestion = name === 'askUserQuestion'
         const input = part.input
         const query =
           input &&
@@ -148,8 +149,18 @@ function ThoughtSteps({
           <ChainOfThoughtStep
             key={part.toolCallId}
             icon={isSearch ? Globe : undefined}
-            label={isSearch ? query || 'Searching the web' : name}
-            status={complete ? 'complete' : 'active'}
+            label={
+              isSearch
+                ? query || 'Searching the web'
+                : isQuestion
+                  ? 'Question for you'
+                  : name
+            }
+            status={
+              complete || (isQuestion && part.state === 'input-available')
+                ? 'complete'
+                : 'active'
+            }
             description={
               part.state === 'output-error'
                 ? 'The tool could not finish.'

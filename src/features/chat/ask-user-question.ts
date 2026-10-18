@@ -1,3 +1,4 @@
+import { parseAskUserQuestion } from '../../../shared/ask-user-question'
 import type { UIMessage } from 'ai'
 
 export interface PendingAskUserQuestion {
@@ -30,25 +31,12 @@ export function getPendingAskUserQuestion(
       part.state !== 'input-available'
     )
       continue
-    const input: unknown = part.input
-    if (
-      !input ||
-      typeof input !== 'object' ||
-      !('question' in input) ||
-      typeof input.question !== 'string' ||
-      !input.question.trim() ||
-      !('options' in input) ||
-      !Array.isArray(input.options) ||
-      !('allowCustomInput' in input) ||
-      typeof input.allowCustomInput !== 'boolean'
-    )
-      continue
-    const options = input.options.flatMap((label: unknown, index) =>
-      typeof label === 'string' && label.trim()
-        ? [{ id: `opt-${index}`, label: label.trim() }]
-        : [],
-    )
-    if (options.length < 2 || options.length > 5) continue
+    const input = parseAskUserQuestion(part.input)
+    if (!input) continue
+    const options = input.options.map((label, index) => ({
+      id: `opt-${index}`,
+      label,
+    }))
     return {
       messageId: last.id,
       toolCallId: part.toolCallId,

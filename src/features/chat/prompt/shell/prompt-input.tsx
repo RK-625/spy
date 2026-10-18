@@ -402,6 +402,7 @@ function PromptInputWorkspaceContent({
     attachments,
     textInput,
     clearDraft: clearPromptDraft,
+    draftVersion,
     quotes,
     prefs: {
       model,
@@ -416,6 +417,11 @@ function PromptInputWorkspaceContent({
       toggleBuildMode,
     },
   } = usePromptInputContext()
+
+  const latestDraftVersion = useRef(draftVersion)
+  useLayoutEffect(() => {
+    latestDraftVersion.current = draftVersion
+  }, [draftVersion])
 
   const submitUserMessage = useCallback(
     async (message: PromptInputMessage, preferences: ComposerPreferences) => {
@@ -664,12 +670,17 @@ function PromptInputWorkspaceContent({
                 : undefined
             }
             onOptionSelect={(option) => {
+              const acceptedVersion = draftVersion
               void handleSubmit({
                 text: option.label,
                 files: [],
                 quotes: quotes.items,
+                draftVersion: acceptedVersion,
               })
-                .then(() => clearPromptDraft())
+                .then(() => {
+                  if (latestDraftVersion.current === acceptedVersion)
+                    clearPromptDraft()
+                })
                 .catch((error: unknown) => {
                   if (!(error instanceof SubmitRefusedError))
                     toast.error('Couldn’t send the answer. Please try again.')
