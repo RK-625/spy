@@ -1,0 +1,604 @@
+import { Dialog as DialogPrimitive } from 'radix-ui'
+import { useControllableState } from '@radix-ui/react-use-controllable-state'
+import { Search, X } from 'lucide-react'
+
+import { motion, useReducedMotion } from 'motion/react'
+import { useLocation, useNavigate } from '@tanstack/react-router'
+import * as React from 'react'
+
+import type { WorkspacePath } from '../navigation'
+import { THEME_PREFERENCE_OPTIONS } from '~/components/theme/theme-preference'
+import { useThemeSwitch } from '~/components/theme/use-theme-switch'
+import { ICON_GLYPH } from '~/styles/tokens/icons'
+import { MOTION } from '~/styles/tokens/motion'
+import { cn } from '~/lib/utils'
+
+const QUERY_SPLIT_REGEX = /\s+/
+
+const commandItemHighlightClassName =
+  'absolute inset-0 rounded-[var(--radius)] bg-[var(--surface-focus)] ring-1 ring-inset ring-[var(--border-strong)]'
+
+function useDebouncedValue<T>(value: T, delayMs = 150): T {
+  const [debounced, setDebounced] = React.useState(value)
+
+  React.useEffect(() => {
+    const id = window.setTimeout(() => setDebounced(value), delayMs)
+    return () => window.clearTimeout(id)
+  }, [delayMs, value])
+
+  return debounced
+}
+
+function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
+  return (
+    <kbd
+      className={cn(
+        'pointer-events-none inline-flex h-5 w-fit min-w-5 select-none items-center justify-center gap-1 rounded-[var(--radius)] border border-border bg-background px-1.5 font-medium font-sans text-[11px] text-muted-foreground',
+        className,
+      )}
+      data-slot="kbd"
+      {...props}
+    />
+  )
+}
+
+function KbdGroup({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn('inline-flex items-center gap-1', className)}
+      data-slot="kbd-group"
+      {...props}
+    />
+  )
+}
+
+type CommandPaletteItemDef = {
+  label: string
+  icon?: React.ComponentType<{ className?: string }>
+  href?: WorkspacePath
+  action?: () => void
+  keywords?: Array<string>
+  description?: string
+}
+
+export type CommandPaletteGroupDef = {
+  heading: string
+  items: Array<CommandPaletteItemDef>
+}
+
+interface CommandPaletteTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  label?: string
+  shortcut?: string
+  showShortcut?: boolean
+}
+
+export interface CommandPaletteProps {
+  groups?: Array<CommandPaletteGroupDef>
+  /** Opt-in Light / Dark / System theme actions. */
+  showThemeGroup?: boolean
+  placeholder?: string
+  shortcutKey?: string
+  /** Custom trigger. Pass `null` to bind ⌘K with no visible trigger. */
+  trigger?: React.ReactNode
+  triggerProps?: CommandPaletteTriggerProps
+  className?: string
+  emptyMessage?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  )
+}
+
+function matchesQuery(item: CommandPaletteItemDef, query: string) {
+  const normalized = query.trim().toLowerCase()
+
+  if (!normalized) {
+    return true
+  }
+
+  const terms = normalized.split(QUERY_SPLIT_REGEX).filter(Boolean)
+  const haystack = [item.label, item.description, ...(item.keywords ?? [])]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  return terms.every((term) => haystack.includes(term))
+}
+
+function SearchShortcutBadge({
+  shortcutKey,
+  isMac,
+  className,
+}: {
+  shortcutKey: string
+  isMac: boolean
+  className?: string
+}) {
+  return (
+    <KbdGroup className={cn('shrink-0', className)}>
+      {isMac ? (
+        <>
+          <Kbd className="px-1.5 font-mono">{'\u2318'}</Kbd>
+          <Kbd>{shortcutKey.toUpperCase()}</Kbd>
+        </>
+      ) : (
+        <>
+          <Kbd className="px-1.5 normal-case">Ctrl</Kbd>
+          <Kbd>{shortcutKey.toUpperCase()}</Kbd>
+        </>
+      )}
+    </KbdGroup>
+  )
+}
+
+function CommandPaletteTrigger({
+  label = 'Search…',
+  shortcut = 'K',
+  showShortcut = true,
+  className,
+  onClick,
+  ...props
+}: CommandPaletteTriggerProps) {
+  const [isMac, setIsMac] = React.useState(true)
+
+  React.useEffect(() => {
+    // ponytail: defer state update to avoid synchronous state transition during mount
+    setTimeout(() => {
+      setIsMac(navigator.platform.toLowerCase().includes('mac'))
+    }, 0)
+  }, [])
+
+  return (
+    <button
+      className={cn(
+        'flex w-full max-w-sm items-center gap-2 rounded-[var(--radius)] border border-border/80 bg-background/60 px-3 py-2 text-left text-muted-foreground text-sm backdrop-blur-sm transition-colors hover:bg-[var(--surface-hover)]',
+        className,
+      )}
+      onClick={onClick}
+      type="button"
+      {...props}
+    >
+      <Search size={16} strokeWidth={1.5} className="shrink-0 mr-2" />
+      <span className="flex-1 truncate">{label}</span>
+      {showShortcut ? (
+        <SearchShortcutBadge
+          className="hidden sm:inline-flex"
+          isMac={isMac}
+          shortcutKey={shortcut}
+        />
+      ) : null}
+    </button>
+  )
+}
+
+function CommandPalette({
+  groups = [],
+  showThemeGroup = false,
+  placeholder = 'Search conversations, actions…',
+  shortcutKey = 'k',
+  trigger,
+  triggerProps,
+  className,
+  emptyMessage = 'No results found.',
+  open,
+  onOpenChange,
+}: CommandPaletteProps) {
+  const navigate = useNavigate()
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const { switchTheme } = useThemeSwitch()
+  const paletteId = React.useId().replace(/:/g, '')
+
+  const [paletteOpen, setPaletteOpen] = useControllableState({
+    defaultProp: false,
+    onChange: onOpenChange,
+    prop: open,
+  })
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const debouncedQuery = useDebouncedValue(searchQuery, 120)
+  const [activeIndex, setActiveIndex] = React.useState(0)
+  const [isMac, setIsMac] = React.useState(true)
+
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  const itemRefs = React.useRef<Array<HTMLButtonElement | null>>([])
+  const previousPathnameRef = React.useRef(pathname)
+  const reducedMotion = useReducedMotion()
+
+  React.useEffect(() => {
+    // ponytail: defer state update to avoid synchronous state transition during mount
+    setTimeout(() => {
+      setIsMac(navigator.platform.toLowerCase().includes('mac'))
+    }, 0)
+  }, [])
+
+  React.useEffect(() => {
+    if (!paletteOpen) return
+    const focusId = window.setTimeout(() => {
+      setSearchQuery('')
+      setActiveIndex(0)
+      inputRef.current?.focus()
+    }, 0)
+    return () => window.clearTimeout(focusId)
+  }, [paletteOpen])
+
+  React.useEffect(() => {
+    if (!pathname) {
+      return
+    }
+    if (previousPathnameRef.current === pathname) {
+      return
+    }
+    previousPathnameRef.current = pathname
+    const closeId = window.setTimeout(() => {
+      setPaletteOpen(false)
+    }, 0)
+    return () => window.clearTimeout(closeId)
+  }, [pathname, setPaletteOpen])
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() === shortcutKey.toLowerCase() &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !isEditableTarget(event.target)
+      ) {
+        event.preventDefault()
+        event.stopPropagation()
+        setPaletteOpen((current) => !current)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown, { capture: true })
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, { capture: true })
+    }
+  }, [setPaletteOpen, shortcutKey])
+
+  const closeThenRun = React.useCallback(
+    (fn: () => void) => {
+      setPaletteOpen(false)
+      fn()
+    },
+    [setPaletteOpen],
+  )
+
+  const handleOpenPalette = React.useCallback(() => {
+    setPaletteOpen(true)
+  }, [setPaletteOpen])
+
+  const themeItems = React.useMemo<Array<CommandPaletteItemDef>>(
+    () =>
+      showThemeGroup
+        ? THEME_PREFERENCE_OPTIONS.map((option) => {
+            const OptionIcon = option.icon
+            return {
+              label: `${option.label} theme`,
+              icon: (props: { className?: string }) => (
+                <OptionIcon
+                  size={ICON_GLYPH.inline}
+                  strokeWidth={1.5}
+                  className={props.className}
+                />
+              ),
+              action: () => switchTheme(option.id),
+              keywords: option.keywords,
+            }
+          })
+        : [],
+    [switchTheme, showThemeGroup],
+  )
+
+  const filteredGroups = React.useMemo(
+    () =>
+      groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) =>
+            matchesQuery(item, debouncedQuery),
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    [debouncedQuery, groups],
+  )
+
+  const filteredThemeItems = React.useMemo(
+    () => themeItems.filter((item) => matchesQuery(item, debouncedQuery)),
+    [debouncedQuery, themeItems],
+  )
+
+  const resolvedItems = React.useMemo<Array<CommandPaletteItemDef>>(() => {
+    const groupItems = filteredGroups.flatMap((group) =>
+      group.items.map((item) => item),
+    )
+
+    const themedItems = filteredThemeItems.map((item) => item)
+
+    return [...groupItems, ...themedItems]
+  }, [filteredGroups, filteredThemeItems])
+
+  React.useEffect(() => {
+    itemRefs.current = itemRefs.current.slice(0, resolvedItems.length)
+
+    if (resolvedItems.length === 0) {
+      // ponytail: defer state updates to avoid synchronous state transition during effect execution
+      setTimeout(() => setActiveIndex(0), 0)
+      return
+    }
+
+    setTimeout(() => {
+      setActiveIndex((current) => Math.min(current, resolvedItems.length - 1))
+    }, 0)
+  }, [resolvedItems.length])
+
+  React.useEffect(() => {
+    const activeItem = itemRefs.current[activeIndex]
+    activeItem?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
+
+  const handleItemSelect = React.useCallback(
+    (item: CommandPaletteItemDef) => {
+      if (item.action) {
+        closeThenRun(item.action)
+        return
+      }
+
+      if (item.href) {
+        const href = item.href
+        closeThenRun(() => {
+          void navigate({ to: href })
+        })
+      }
+    },
+    [navigate, closeThenRun],
+  )
+
+  const handleListKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setActiveIndex((current) =>
+        resolvedItems.length === 0 ? 0 : (current + 1) % resolvedItems.length,
+      )
+      return
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActiveIndex((current) =>
+        resolvedItems.length === 0
+          ? 0
+          : (current - 1 + resolvedItems.length) % resolvedItems.length,
+      )
+      return
+    }
+
+    if (event.key === 'Home') {
+      event.preventDefault()
+      setActiveIndex(0)
+      return
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault()
+      setActiveIndex(Math.max(resolvedItems.length - 1, 0))
+      return
+    }
+
+    if (event.key === 'Enter') {
+      const activeItem = resolvedItems.at(activeIndex)
+
+      if (!activeItem) {
+        return
+      }
+
+      event.preventDefault()
+      handleItemSelect(activeItem)
+      return
+    }
+
+    if (event.key === 'Escape') {
+      setPaletteOpen(false)
+    }
+  }
+
+  const renderItem = (item: CommandPaletteItemDef, key: string) => {
+    const index = resolvedItems.indexOf(item)
+    const isActive = index === activeIndex
+
+    return (
+      <button
+        className={cn(
+          'relative isolate flex w-full items-start gap-3 rounded-[var(--radius)] px-3 py-2.5 text-left text-foreground text-sm transition-colors focus-visible:outline-none',
+        )}
+        key={key}
+        onClick={() => handleItemSelect(item)}
+        onMouseEnter={() => setActiveIndex(index)}
+        ref={(node) => {
+          itemRefs.current[index] = node
+        }}
+        type="button"
+      >
+        {isActive ? (
+          <motion.span
+            aria-hidden
+            className={commandItemHighlightClassName}
+            layoutId={`${paletteId}-active-item`}
+            transition={reducedMotion ? { duration: 0 } : MOTION.spring}
+          />
+        ) : null}
+        {item.icon ? (
+          <item.icon className="relative z-10 mt-0.5 size-4 shrink-0" />
+        ) : (
+          <Search
+            size={16}
+            strokeWidth={1.5}
+            className="relative z-10 mt-0.5 shrink-0 opacity-45 mr-2"
+          />
+        )}
+        <div className="relative z-10 min-w-0">
+          <div className="truncate font-medium text-sm">{item.label}</div>
+          {item.description ? (
+            <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-5">
+              {item.description}
+            </p>
+          ) : null}
+        </div>
+      </button>
+    )
+  }
+
+  return (
+    <>
+      {trigger === undefined ? (
+        <CommandPaletteTrigger
+          shortcut={shortcutKey.toUpperCase()}
+          {...triggerProps}
+          onClick={handleOpenPalette}
+        />
+      ) : trigger ? (
+        React.isValidElement<{ onClick?: () => void }>(trigger) ? (
+          React.cloneElement(trigger, {
+            onClick: handleOpenPalette,
+          })
+        ) : (
+          <button
+            className="cursor-pointer"
+            onClick={handleOpenPalette}
+            type="button"
+          >
+            {trigger}
+          </button>
+        )
+      ) : null}
+
+      <DialogPrimitive.Root onOpenChange={setPaletteOpen} open={paletteOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay
+            data-workspace-overlay
+            className="fixed inset-0 z-[220] bg-background/55 backdrop-blur-sm duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+          />
+          <DialogPrimitive.Content
+            data-workspace-overlay
+            className={cn(
+              // Desktop-first placement (product is desktop-only v1).
+              // Avoid undefined --nav-stack-height-* tokens that invalidate calc().
+              'fixed inset-x-4 top-[12vh] z-[221] flex max-h-[min(560px,calc(100dvh-4rem))] flex-col overflow-hidden rounded-[var(--radius)] border border-border/80 bg-background shadow-[0_28px_90px_var(--shadow-palette)] outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 sm:inset-x-6 sm:left-1/2 sm:w-[min(680px,calc(100vw-2rem))] sm:-translate-x-1/2',
+              className,
+            )}
+            onOpenAutoFocus={(event) => {
+              event.preventDefault()
+              inputRef.current?.focus()
+            }}
+          >
+            <DialogPrimitive.Title className="sr-only">
+              Search
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              Search conversations and actions.
+            </DialogPrimitive.Description>
+
+            <div className="flex shrink-0 items-center gap-3 border-border/70 border-b px-4 py-3">
+              <Search
+                size={16}
+                strokeWidth={1.5}
+                className="shrink-0 text-muted-foreground"
+              />
+              <input
+                autoCapitalize="off"
+                autoCorrect="off"
+                className="w-full min-w-0 touch-manipulation bg-transparent text-[16px] text-foreground leading-normal outline-none placeholder:text-muted-foreground md:text-sm"
+                enterKeyHint="search"
+                inputMode="search"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onKeyDown={handleListKeyDown}
+                placeholder={placeholder}
+                ref={inputRef}
+                spellCheck={false}
+                type="search"
+                value={searchQuery}
+              />
+              <SearchShortcutBadge
+                className="hidden md:inline-flex"
+                isMac={isMac}
+                shortcutKey={shortcutKey}
+              />
+              <DialogPrimitive.Close asChild>
+                <button
+                  aria-label="Close search"
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-[var(--surface-hover)] hover:text-foreground"
+                  type="button"
+                >
+                  <X size={ICON_GLYPH.toolbar} strokeWidth={1.5} />
+                </button>
+              </DialogPrimitive.Close>
+            </div>
+
+            <div className="min-h-0 max-h-[min(420px,calc(100dvh-8rem))] overflow-hidden">
+              <div
+                className="h-full max-h-[inherit] overflow-y-auto overscroll-contain p-2 [-webkit-overflow-scrolling:touch]"
+                onKeyDown={handleListKeyDown}
+              >
+                {resolvedItems.length === 0 ? (
+                  <div className="px-3 py-10 text-center text-muted-foreground text-sm">
+                    {emptyMessage}
+                  </div>
+                ) : (
+                  <>
+                    {filteredGroups.map((group, groupIndex) => (
+                      <React.Fragment key={group.heading}>
+                        {groupIndex > 0 ? (
+                          <div className="mx-2 my-2 h-px bg-border/60" />
+                        ) : null}
+                        <div className="px-2 py-1">
+                          <div className="px-1 pb-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-[0.16em]">
+                            {group.heading}
+                          </div>
+                          <div className="space-y-1">
+                            {group.items.map((item, itemIndex) =>
+                              renderItem(
+                                item,
+                                `${group.heading}-${item.href ?? item.label}-${itemIndex}`,
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    ))}
+
+                    {filteredThemeItems.length > 0 ? (
+                      <>
+                        {filteredGroups.length > 0 ? (
+                          <div className="mx-2 my-2 h-px bg-border/60" />
+                        ) : null}
+                        <div className="px-2 py-1">
+                          <div className="px-1 pb-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-[0.16em]">
+                            Theme
+                          </div>
+                          <div className="space-y-1">
+                            {filteredThemeItems.map((item, index) =>
+                              renderItem(item, `theme-${item.label}-${index}`),
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    </>
+  )
+}
+
+export { CommandPalette }

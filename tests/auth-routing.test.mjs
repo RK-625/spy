@@ -7,12 +7,17 @@ const origin = process.env.AUTH_TEST_URL ?? 'http://localhost:3000'
 const request = (path, options) =>
   fetch(new URL(path, origin), { redirect: 'manual', ...options })
 
-test('guests are redirected before workspace content renders', async () => {
-  const response = await request('/')
-  assert.equal(response.status, 307)
-  assert.equal(response.headers.get('location'), '/login')
-  assert.doesNotMatch(await response.text(), /aria-label="Workspace"/)
-})
+for (const path of ['/', '/chat', '/notes', '/graph']) {
+  test(`guests visiting ${path} are redirected before workspace content renders`, async () => {
+    const response = await request(path)
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get('location'), '/login')
+    assert.doesNotMatch(
+      await response.text(),
+      /aria-label="Workspace navigation"/,
+    )
+  })
+}
 
 test('login is server rendered and publicly accessible', async () => {
   const response = await request('/login')

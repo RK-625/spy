@@ -7,3 +7,7 @@
 @import './tokens/palette-dark.css';
 @import './theme.css';
 @import './base.css';
+@import './workspace.css';
+
+/* Also scan source components when rendered by the isolated UI fixture. */
+@source '../';

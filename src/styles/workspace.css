@@ -1,0 +1,21 @@
+/* Original SPY chrome timing names, shared by the ported workspace components. */
+@theme inline {
+  --ease-chrome: cubic-bezier(0, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-root *,
+  [data-slot='dialog-overlay'],
+  [data-slot='dialog-content'],
+  [data-workspace-overlay],
+  [data-workspace-overlay] *,
+  [data-slot='tooltip-content'] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

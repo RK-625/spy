@@ -17,6 +17,7 @@ import appCss from '~/styles/app.css?url'
 import { getToken } from '~/lib/auth-server'
 import { AuthStatus } from '~/features/auth/auth-status'
 import { AuthProvider } from '~/features/auth/auth-provider'
+import { AppThemeProvider } from '~/components/theme/theme-provider'
 
 const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
   setResponseHeader('Cache-Control', 'private, no-store')
@@ -98,12 +99,12 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <AppThemeProvider>{children}</AppThemeProvider>
         <Scripts />
       </body>
     </html>

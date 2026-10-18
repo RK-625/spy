@@ -52,7 +52,9 @@ src/
   in the backend. The login page has no account-management controls; this sprint
   does not create SPY profiles or add onboarding.
 - Put workspace routes under the pathless `_authenticated` layout. It checks
-  the server-validated session before rendering. `/` is intentionally blank.
+  the server-validated session before rendering and mounts the shared workspace
+  shell. `/`, `/chat`, `/notes`, and `/graph` have blank content areas until their
+  feature ports are connected.
 - `lib/auth-server.ts` connects server-side session checks and the same-origin
   `/api/auth/*` proxy to the existing Better Auth deployment. JWT caching stays
   disabled (the integration default), so a cookie alone never grants access.
@@ -86,7 +88,31 @@ ported components can use them directly.
 
 `app.css` imports the token layers once. The root palette is light; adding
 `.dark` to `<html>` selects the dark palette and Tailwind's `dark:` variant.
-Theme preference controls and persistence belong to a later implementation.
+The ported theme provider defaults to the source app's dark palette and stores
+Light/Dark/System preferences under `spy-theme`. The sidebar toggle, command
+palette, and Appearance settings all use the same theme hook.
+
+## Workspace port
+
+The workspace source is `RK-625/spy-frontend` at commit `119b082`. Shared chrome
+is organized under `components/workspace/{sidebar,search,settings}`; routes own
+authentication and pass the current Better Auth user and sign-out callback into
+the shell. Shared components never import the auth feature or backend clients.
+The sidebar keeps the original 56px/240px modes and `spy-sidebar-mode` storage
+key. Command/Ctrl+B changes its mode; Command/Ctrl+K opens action search.
+
+The first port covers navigation, search actions, theme preferences, General
+settings and sign-out. Chat composition/history, note hierarchy/detail/learning,
+graph rendering, and provider/embedding/tool settings remain to be ported.
+The original SQLite, FalkorDB, and macOS keychain modules are not imported into
+this Convex app. See `docs/workspace-port.md` for the remaining source map and
+the provider-key decision needed before wiring the rest of the workspace.
+
+Run `bun run test:workspace:dev` to inspect the same shared UI at
+`http://localhost:3016`. This is a separate Vite component fixture under
+`tests/workspace`, with a synthetic identity and simulated sign-out failure.
+It never imports the application router or auth client, creates no users, and
+does not bypass login in the app. It is excluded from production bundling.
 
 Use semantic utilities such as `bg-background`, `text-text-primary`,
 `border-border-subtle`, `font-display`, and `px-prompt-body-x`. For canvas or
