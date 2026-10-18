@@ -41,3 +41,21 @@
 - Set SPY page metadata and English document language. Narrowed the starter router's unknown error value so the full checks can complete. Replaced the incompatible `react-router-with-query` adapter with TanStack's documented `react-router-ssr-query` integration after browser verification exposed a server-rendering failure.
 - Validation: `bun run build`, `bun run lint`, frozen-lockfile installation, and `git diff --check` passed. Both palettes match all 97 original declarations; all foundation variable references resolve. Browser checks verified light/dark backgrounds and foregrounds, 10px prompt padding, 32px toolbar controls, and successful Inter/Unbounded/VT323 font loading. A local HTTP check confirmed status 200 and server-rendered content without the prior SSR error after the adapter replacement.
 - Web deployment pending: no web hosting target is configured. Theme controls, routes, and workspace components remain the next sprint.
+
+## 2026-10-18 — Better Auth server and HTTP routes
+
+- Added the Better Auth server using the Convex component adapter, typed backend environment variables, trusted site origin, email/password login, and Convex token integration. Email verification is disabled for this initial sprint.
+- Mounted Better Auth HTTP routes and regenerated the Convex API types. Deployed successfully to development deployment `secret-nightingale-447`.
+- Validation: Convex TypeScript, targeted ESLint, and whitespace checks passed. `convex dev --once --typecheck enable` reported functions ready; the deployed `/api/auth/get-session` returned HTTP 200 with `null` for an unauthenticated request.
+- TanStack Start auth proxy/provider, account screens, and SPY profile provisioning remain separate sprints. Signup/login/logout have not yet been verified end to end through the web application.
+
+## 2026-10-18 — Clarify Better Auth component client naming
+
+- Renamed `authComponent` to `authComponentClient` in the server export, database adapter, and HTTP route registration.
+- Validation: Convex TypeScript, targeted ESLint, and whitespace checks passed. Deployed successfully to development deployment `secret-nightingale-447` with `convex dev --once --typecheck enable`.
+
+## 2026-10-18 — Merge auth workspace into frontend
+
+- Merged `chats-workspace` at `3229c66` into `frontend`, preserving both branch histories and the frontend foundation. The only conflict was concurrent additions to this log; retained all entries from both branches. No source-code conflicts occurred.
+- Validation: full build, full lint, Convex TypeScript, and whitespace checks passed. The local frontend returned HTTP 200 with server-rendered SPY content.
+- Deployed the merged backend to development deployment `secret-nightingale-447`; Convex reported functions ready and `/api/auth/get-session` returned HTTP 200 with `null` for an unauthenticated request. Web deployment remains pending because no web hosting target is configured.
