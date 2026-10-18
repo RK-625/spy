@@ -34,3 +34,8 @@
 - Mounted Better Auth HTTP routes and regenerated the Convex API types. Deployed successfully to development deployment `secret-nightingale-447`.
 - Validation: Convex TypeScript, targeted ESLint, and whitespace checks passed. `convex dev --once --typecheck enable` reported functions ready; the deployed `/api/auth/get-session` returned HTTP 200 with `null` for an unauthenticated request.
 - TanStack Start auth proxy/provider, account screens, and SPY profile provisioning remain separate sprints. Signup/login/logout have not yet been verified end to end through the web application.
+
+## 2026-10-18 — Clarify Better Auth component client naming
+
+- Renamed `authComponent` to `authComponentClient` in the server export, database adapter, and HTTP route registration.
+- Validation: Convex TypeScript, targeted ESLint, and whitespace checks passed. Deployed successfully to development deployment `secret-nightingale-447` with `convex dev --once --typecheck enable`.

@@ -7,14 +7,14 @@ import authConfig from "./auth.config";
 import type { GenericCtx } from "@convex-dev/better-auth";
 import type { DataModel } from "./_generated/dataModel";
 
-export const authComponent = createClient<DataModel>(components.betterAuth);
+export const authComponentClient = createClient<DataModel>(components.betterAuth);
 
 export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth({
     baseURL: env.SITE_URL,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.SITE_URL],
-    database: authComponent.adapter(ctx),
+    database: authComponentClient.adapter(ctx),
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
