@@ -53,7 +53,11 @@ and edits made during an upload retain their draft.
 
 The isolated `/composer` fixture renders this UI with presentation-only key
 hints and appends user messages in memory. It never calls a model or backend.
-Production composition, durable drafts and chat transport remain next.
+`features/chat/chat-workspace.tsx` now composes the conversation and composer,
+including the source selection toolbar: completed message excerpts preserve
+Markdown structure and become quote chips in the shared draft. Each conversation
+has a separate selection scope. Production route composition, durable drafts and
+chat transport remain next.
 
 ## Remaining feature ports
 

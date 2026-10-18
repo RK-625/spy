@@ -1,0 +1,182 @@
+import {
+  FloatingPortal,
+  autoUpdate,
+  flip,
+  hide,
+  inline,
+  offset,
+  shift,
+  useFloating,
+} from '@floating-ui/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Check, Copy, MessageSquarePlus } from 'lucide-react'
+import { toast } from 'sonner'
+import { AnimatePresence, motion } from 'motion/react'
+import { readMessageSelection } from './message-selection'
+import type { MessageExcerpt, MessageSelection } from './message-selection'
+import { Button } from '~/components/ui/actions/button'
+import { usePrefersReducedMotion } from '~/components/brand/dotmatrix/core/hooks'
+import { CHROME_FADE, MOTION } from '~/styles/tokens/motion'
+
+export function MessageSelectionToolbar({
+  scopeId,
+  onAddQuote,
+}: {
+  scopeId: string
+  onAddQuote: (excerpt: MessageExcerpt) => void
+}) {
+  const [selection, setSelection] = useState<MessageSelection | null>(null)
+  const [copied, setCopied] = useState(false)
+  const selectionRef = useRef<MessageSelection | null>(null)
+  const toolbarRef = useRef<HTMLDivElement | null>(null)
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reducedMotion = usePrefersReducedMotion()
+  // Scrolling repositions the toolbar (autoUpdate) and hides it while the selection is out of view.
+  const {
+    refs: { setReference, setPositionReference, setFloating },
+    floatingStyles,
+    middlewareData,
+  } = useFloating({
+    open: selection !== null,
+    placement: 'top',
+    strategy: 'fixed',
+    middleware: [inline(), offset(8), flip(), shift({ padding: 8 }), hide()],
+    whileElementsMounted: autoUpdate,
+  })
+
+  const dismiss = useCallback(() => {
+    selectionRef.current = null
+    setSelection(null)
+    setCopied(false)
+  }, [])
+
+  useEffect(() => {
+    const scope = document.getElementById(scopeId)
+    if (!scope) return
+    setReference(scope)
+    const updateSelection = () => {
+      if (toolbarRef.current?.contains(document.activeElement)) return
+      const next = readMessageSelection(window.getSelection(), scope)
+      selectionRef.current = next
+      setSelection(next)
+      setCopied(false)
+      if (next) {
+        const common = next.range.commonAncestorContainer
+        setPositionReference({
+          // The selection's own element, so scrolling any container around it (chat, wide table, code) repositions.
+          contextElement:
+            common instanceof Element
+              ? common
+              : (common.parentElement ?? scope),
+          getBoundingClientRect: () => next.range.getBoundingClientRect(),
+          getClientRects: () => next.range.getClientRects(),
+        })
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!selectionRef.current) return
+      if (event.key === 'Escape') {
+        dismiss()
+      } else if (
+        event.key === 'Tab' &&
+        !event.shiftKey &&
+        !toolbarRef.current?.contains(document.activeElement)
+      ) {
+        event.preventDefault()
+        toolbarRef.current?.querySelector('button')?.focus()
+      }
+    }
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !toolbarRef.current?.contains(event.target)
+      )
+        dismiss()
+    }
+    document.addEventListener('selectionchange', updateSelection)
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('selectionchange', updateSelection)
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
+    }
+  }, [scopeId, dismiss, setReference, setPositionReference])
+
+  const copySelection = async () => {
+    const snapshot = selectionRef.current
+    if (!snapshot) return
+    try {
+      await navigator.clipboard.writeText(snapshot.plainText)
+      if (selectionRef.current !== snapshot) return
+      setCopied(true)
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
+      feedbackTimer.current = setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error("Couldn't copy selected text. Try copying again.")
+    }
+  }
+
+  return (
+    <FloatingPortal>
+      <AnimatePresence>
+        {selection ? (
+          <div
+            ref={setFloating}
+            style={{
+              ...floatingStyles,
+              visibility: middlewareData.hide?.referenceHidden
+                ? 'hidden'
+                : 'visible',
+            }}
+            className="z-50"
+          >
+            <motion.div
+              ref={toolbarRef}
+              role="toolbar"
+              aria-label="Selected text actions"
+              {...CHROME_FADE}
+              transition={reducedMotion ? { duration: 0 } : MOTION.chrome}
+              className="flex gap-1 rounded-[var(--radius)] border border-border bg-popover p-1 text-popover-foreground shadow-md"
+              onPointerDown={(event) => event.preventDefault()}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget))
+                  dismiss()
+              }}
+            >
+              <Button
+                size="sm"
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  window.getSelection()?.removeAllRanges()
+                  onAddQuote(selection)
+                  dismiss()
+                }}
+              >
+                <MessageSquarePlus data-icon="inline-start" />
+                Add to chat
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  void copySelection()
+                }}
+              >
+                {copied ? (
+                  <Check data-icon="inline-start" />
+                ) : (
+                  <Copy data-icon="inline-start" />
+                )}
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </motion.div>
+          </div>
+        ) : null}
+      </AnimatePresence>
+    </FloatingPortal>
+  )
+}

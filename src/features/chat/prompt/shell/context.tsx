@@ -114,7 +114,16 @@ function PromptDraftProvider({
   useLayoutEffect(() => {
     filesRef.current = files
   }, [files])
-  useEffect(() => () => revokeFileUrls(filesRef.current), [])
+  const fileLifetime = useRef(0)
+  useEffect(() => {
+    const lifetime = ++fileLifetime.current
+    return () => {
+      // Strict Mode replays setup before this microtask; only a real unmount releases URLs.
+      queueMicrotask(() => {
+        if (fileLifetime.current === lifetime) revokeFileUrls(filesRef.current)
+      })
+    }
+  }, [])
   const onDraftChangeRef = useRef(onDraftChange)
   useLayoutEffect(() => {
     onDraftChangeRef.current = onDraftChange

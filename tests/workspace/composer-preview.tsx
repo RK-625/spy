@@ -2,9 +2,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import type { UIMessage } from 'ai'
 import type { PromptInputMessage } from '~/features/chat/types'
-import { ConversationView } from '~/features/chat/conversation/conversation-view'
-import { PromptInputProvider } from '~/features/chat/prompt/shell/context'
-import { PromptInputWorkspace } from '~/features/chat/prompt/shell/prompt-input'
+import { ChatWorkspace } from '~/features/chat/chat-workspace'
 
 // Presentation-only key hints enable the source picker; these are not credentials.
 const providerKeys = {
@@ -41,18 +39,17 @@ export function ComposerPreview() {
         Composer preview · messages stay in this page; no model or database
         calls.
       </p>
-      <PromptInputProvider chatId="composer-preview">
-        <ConversationView messages={messages} status="ready" />
-        <PromptInputWorkspace
-          status="ready"
-          onSubmitMessage={send}
-          stop={() => {}}
-          providerKeys={providerKeys}
-          openSettings={(pane) =>
-            toast.info(`Open ${pane} from workspace Settings.`)
-          }
-        />
-      </PromptInputProvider>
+      <ChatWorkspace
+        conversationId="composer-preview"
+        messages={messages}
+        status="ready"
+        onSubmitMessage={send}
+        stop={() => {}}
+        providerKeys={providerKeys}
+        openSettings={(pane) =>
+          toast.info(`Open ${pane} from workspace Settings.`)
+        }
+      />
     </main>
   )
 }

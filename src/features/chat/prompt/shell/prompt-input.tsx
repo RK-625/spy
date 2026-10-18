@@ -6,7 +6,14 @@ import '../prompt.css'
  */
 
 import { toast } from 'sonner'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Check, Globe, Hammer, Plus, Settings } from 'lucide-react'
 import { PromptInputTools } from '../footer/tools'
 import { PromptInputButton } from '../footer/button'
@@ -164,7 +171,11 @@ export const PromptInput = ({
     files: attachments.files,
     quotes: quotes.items,
   })
-  useEffect(() => {
+  const submitHandler = useRef(onSubmit)
+  useLayoutEffect(() => {
+    submitHandler.current = onSubmit
+  }, [onSubmit])
+  useLayoutEffect(() => {
     latestDraft.current = {
       text: textInput.value,
       files: attachments.files,
@@ -250,7 +261,7 @@ export const PromptInput = ({
               )
             : []
 
-        await onSubmit(
+        await submitHandler.current(
           { files: convertedFiles, text, quotes: quotes.items },
           event,
         )

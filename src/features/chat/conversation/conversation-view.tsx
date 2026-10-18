@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Check, Copy, Globe, Lightbulb, Pencil, Split } from 'lucide-react'
 import { isToolUIPart } from 'ai'
 import {
@@ -21,6 +21,8 @@ import {
   ChainOfThoughtStep,
 } from './chain-of-thought'
 import { Source, Sources, SourcesContent, SourcesTrigger } from './sources'
+import { MessageSelectionToolbar } from './selection/selection-toolbar'
+import type { MessageExcerpt } from './selection/message-selection'
 import type { ReactNode } from 'react'
 import type { ChatStatus, UIMessage } from 'ai'
 import { webUrl } from '~/lib/web-url'
@@ -31,12 +33,14 @@ type ToolPart = Extract<
 >
 
 export interface ConversationViewProps {
+  conversationId?: string
   messages: Array<UIMessage>
   status: ChatStatus
   error?: string | null
   onEditMessage?: (message: UIMessage) => void
   onForkMessage?: (messageId: string) => void
   renderToolPart?: (part: ToolPart) => ReactNode
+  onAddQuote?: (excerpt: MessageExcerpt) => void
 }
 
 function plainText(message: UIMessage) {
@@ -171,13 +175,16 @@ function ThoughtSteps({
 
 /** Original conversation presentation; the owning feature supplies durable state and actions. */
 export function ConversationView({
+  conversationId,
   messages,
   status,
   error,
   onEditMessage,
   onForkMessage,
   renderToolPart,
+  onAddQuote,
 }: ConversationViewProps) {
+  const selectionScopeId = useId()
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
   const [copyError, setCopyError] = useState<string | null>(null)
   const copiedReset = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -204,6 +211,7 @@ export function ConversationView({
   return (
     <Conversation aria-label="Conversation" aria-live="polite">
       <ConversationContent
+        id={selectionScopeId}
         data-chat-selection-scope
         aria-label="Conversation messages"
         className="pb-16"
@@ -331,6 +339,13 @@ export function ConversationView({
         {status === 'submitted' && <ChainOfThought isStreaming />}
       </ConversationContent>
       <ConversationScrollButton />
+      {onAddQuote && (
+        <MessageSelectionToolbar
+          key={conversationId ?? selectionScopeId}
+          scopeId={selectionScopeId}
+          onAddQuote={onAddQuote}
+        />
+      )}
     </Conversation>
   )
 }
