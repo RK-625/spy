@@ -8,6 +8,7 @@ src/
     brand/                 SPY logos, custom icons, and brand assets
     workspace/             Shared sidebar and workspace navigation
   features/
+    auth/                  Login page, session guard, and Convex auth provider
     landing/               Landing experience
     chat/                  Conversations, prompt, and tool displays
     notes/                 Notes hierarchy and note detail
@@ -40,6 +41,35 @@ src/
   initial structure shallow.
 - Empty domain directories are tracked with `.gitkeep` until their first
   implementation. Do not add placeholder components or data services.
+
+## Authentication routes
+
+- `/login` is public. Its independent UI lives in
+  `features/auth/login-page.tsx`; `routes/login.tsx` only composes the page and
+  redirects existing sessions.
+- Put workspace routes under the pathless `_authenticated` layout. It checks
+  the server-validated session before rendering. `/` is intentionally blank.
+- `lib/auth-server.ts` connects server-side session checks and the same-origin
+  `/api/auth/*` proxy to the existing Better Auth deployment. JWT caching stays
+  disabled (the integration default), so a cookie alone never grants access.
+- `features/auth/auth-provider.tsx` connects Better Auth to Convex's typed
+  `ConvexProviderWithAuth` interface. It deduplicates token requests and refreshes
+  tokens when Convex requests it. This avoids the integration provider's generic
+  session type incompatibility with the installed Better Auth patch.
+- The client guard waits for Convex authentication and rechecks the session on
+  focus and every 60 seconds. Failed checks hide workspace content; ended
+  sessions return to `/login`. After changing accounts or signing out, use a
+  full navigation to discard the previous user's query cache. Use the exported
+  `signOut()` helper in `lib/auth-client.ts` when adding a sign-out control.
+- The auth server's `SITE_URL` must match the app origin (currently
+  `http://localhost:3000`). Keep `VITE_CONVEX_SITE_URL` configured in the app
+  environment. No browser secret is needed.
+- With the local app running, `bun run test:auth` verifies guest redirects,
+  forged cookies, proxy behavior, rejected credentials, and origin protection.
+  Set `AUTH_TEST_URL` to test a different configured app origin.
+- Route guards protect page access. Future Convex data functions must also
+  validate identity and document ownership; the existing starter functions
+  are not an authorization model for workspace data.
 
 ## Design tokens
 
