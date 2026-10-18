@@ -156,3 +156,9 @@
 - Added `@milkdown/plugin-highlight`, `shiki`, `graphology`, and `graphology-traversal` dependencies and updated the Bun lockfile in preparation for Milkdown syntax highlighting and Graph visualization.
 - Validation: full production build, `bun run lint` (tsc + eslint), and `git diff --check` passed cleanly.
 - Web deployment pending: no web hosting target is configured in this repository; this sprint updates dependencies only.
+
+## 2026-10-18 — Convex memory graph store
+
+- Replaced the source FalkorDB graph with owner-scoped Convex tables: `memories` (source core fields), `memoryLinks` (PARENT_OF/RELATES_TO with source-type-target and target-type indexes) and `memoryQuestions` (1536-dim cosine vector index filtered by owner). No second database or Falkor binaries. Convex document IDs are the public Memory IDs.
+- Added the reactive `memory.topology.get` query (lean rows plus links, bounded at 2,000 memories/8,000 links with a truncation flag) and `memoryById` for detail/inspection. Added internal tool-facing `getMemories` cones (ancestors/descendants to `hops`, center RELATES_TO, visited-set cycle fuse capped at 200), `listing` and all-or-nothing `manageLinks` (remove then upsert in one transaction, owned endpoints, single PARENT_OF parent unless removed in the same call). One deliberate deviation: self-links are rejected. The source's distance ceiling 0.25 maps to a Convex similarity floor of 0.75.
+- Validation: lint/application and Convex type checks, production build and whitespace checks passed. Deployed to development `secret-nightingale-447` at 22:09. No account/key/runtime tests were run; no data seeded. Frontend not deployed (no host). Next: memory writes/embeddings/search, then the Notes UI.

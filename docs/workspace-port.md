@@ -151,3 +151,17 @@ Selecting a choice or submitting a custom answer sends the original `Q: … / A:
 Dismiss persists the original `{ status: "cancelled" }` tool output in the same Agent order, with no new generation. Its mutation derives conversation ownership, validates the selected assistant/order/call, refuses stale questions and is idempotent after an existing result. Dismissal waits for an in-progress fork to finish so it cannot change the copied reply mid-copy. History displays a completed Question for you step rather than an indefinitely running tool.
 
 Production build, lint/application/Convex type checks and development deployment passed. No account/key/provider/browser/runtime tests or model requests were run. Memory retrieval/writes, build mode, Excalidraw, Notes and Graph remain to port.
+
+## Convex memory graph store
+
+FalkorDB is replaced by Convex. The source used it only for node/edge storage, single-hop pattern matches, app-side hop-by-hop traversal, a 1536-dim cosine ANN index and atomic multi-statement writes. No graph algorithms or variable-length paths were used. `convex/memory/` maps those features as follows:
+
+| Source (Falkor) | Convex |
+| --- | --- |
+| `Memory` nodes | `memories`, indexed by owner |
+| `PARENT_OF` / `RELATES_TO` edges | `memoryLinks`, indexed `by_source_and_type_and_target` and `by_target_and_type` |
+| `MemoryQuestion -[:FOR_MEMORY]->` + vector index | `memoryQuestions` with `by_embedding` vector index (owner filter) |
+| Topology change events | Reactive `memory.topology.get` query |
+| Atomic Cypher writes | Transactional internal mutations |
+
+Vector search runs only in actions and returns similarity rather than distance, so the source 0.25 distance ceiling becomes a 0.75 similarity floor. Full-graph reads are bounded and report `truncated`. Tool-facing functions are internal and receive the owner from the calling conversation, never from model input. Memory writes, embeddings, search, deletion cleanup and fork graph copying come in the next sprint.

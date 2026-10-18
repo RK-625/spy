@@ -2,6 +2,8 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { encryptedKey, providerId } from './providers/validators'
 import { conversationSummary, draftContent, turn } from './chat/validators'
+import { memoryFields, memoryLinkType } from './memory/validators'
+import { EMBEDDING_DIMENSION } from './memory/policy'
 
 export default defineSchema({
   chatDrafts: defineTable({
@@ -65,6 +67,32 @@ export default defineSchema({
     'ownerTokenIdentifier',
     'requestId',
   ]),
+  memories: defineTable({
+    ownerTokenIdentifier: v.string(),
+    ...memoryFields,
+    updatedAt: v.number(),
+  }).index('by_ownerTokenIdentifier', ['ownerTokenIdentifier']),
+  memoryLinks: defineTable({
+    ownerTokenIdentifier: v.string(),
+    source: v.id('memories'),
+    target: v.id('memories'),
+    type: memoryLinkType,
+  })
+    .index('by_ownerTokenIdentifier', ['ownerTokenIdentifier'])
+    .index('by_source_and_type_and_target', ['source', 'type', 'target'])
+    .index('by_target_and_type', ['target', 'type']),
+  memoryQuestions: defineTable({
+    ownerTokenIdentifier: v.string(),
+    memoryId: v.id('memories'),
+    text: v.string(),
+    embedding: v.array(v.float64()),
+  })
+    .index('by_memoryId', ['memoryId'])
+    .vectorIndex('by_embedding', {
+      vectorField: 'embedding',
+      dimensions: EMBEDDING_DIMENSION,
+      filterFields: ['ownerTokenIdentifier'],
+    }),
   providerKeys: defineTable({
     ownerTokenIdentifier: v.string(),
     provider: providerId,
