@@ -208,6 +208,10 @@ function LiveChat({
     () => toUIMessages(history.results),
     [history.results],
   )
+  const mcpApps = useQuery({
+    ...convexQuery(api.chat.mcpApps.apps, {}),
+    retry: false,
+  })
   const pendingAsk = useMemo(
     () => getPendingAskUserQuestion(messages),
     [messages],
@@ -252,6 +256,7 @@ function LiveChat({
       mode: preferences.mode,
       useWebSearch: preferences.useWebSearch,
       useBuildMode: preferences.useBuildMode,
+      useExcalidraw: preferences.useExcalidraw,
       uploadIds,
       draftKey,
       draftVersion: message.draftVersion,
@@ -338,7 +343,8 @@ function LiveChat({
               toast.error('Couldn’t stop the response. Try again.'),
             )
         }}
-        tools={{ webSearch: true, build: true, excalidraw: false }}
+        tools={{ webSearch: true, build: true, excalidraw: true }}
+        mcpApps={mcpApps.data}
         history={{
           loading: history.status === 'LoadingMore',
           canLoadMore: history.status === 'CanLoadMore',

@@ -23,9 +23,12 @@ import {
 import { Source, Sources, SourcesContent, SourcesTrigger } from './sources'
 import { MessageSelectionToolbar } from './selection/selection-toolbar'
 import type { MessageExcerpt } from './selection/message-selection'
+import type { McpApp } from '../mcp-app/mcp-app-card'
 import type { ReactNode } from 'react'
 import type { ChatStatus, UIMessage } from 'ai'
 import { webUrl } from '~/lib/web-url'
+import { Excalidraw } from '~/components/brand/providers/excalidraw'
+import { McpAppCard } from '~/features/chat/mcp-app/mcp-app-card'
 
 type ToolPart = Extract<
   UIMessage['parts'][number],
@@ -43,6 +46,16 @@ export interface ConversationViewProps {
   renderToolPart?: (part: ToolPart) => ReactNode
   onAddQuote?: (excerpt: MessageExcerpt) => void
   history?: { loading: boolean; canLoadMore: boolean; loadMore: () => void }
+  /** Server-recorded Excalidraw tools whose results embed an MCP App. */
+  mcpApps?: Array<McpApp>
+}
+
+function toolName(part: ToolPart) {
+  return part.type === 'dynamic-tool' ? part.toolName : part.type.slice(5)
+}
+
+function findApp(apps: Array<McpApp> | undefined, name: string) {
+  return apps?.find((app) => app.toolNames.includes(name))
 }
 
 function plainText(message: UIMessage) {
@@ -90,9 +103,11 @@ function searchResults(
 function ThoughtSteps({
   message,
   streaming,
+  mcpApps,
 }: {
   message: UIMessage
   streaming: boolean
+  mcpApps?: Array<McpApp>
 }) {
   const steps = message.parts.filter(
     (part) => part.type === 'reasoning' || isToolUIPart(part),
@@ -120,8 +135,8 @@ function ThoughtSteps({
           part.state === 'output-available' ||
           part.state === 'output-error' ||
           part.state === 'output-denied'
-        const name =
-          part.type === 'dynamic-tool' ? part.toolName : part.type.slice(5)
+        const name = toolName(part)
+        const isApp = Boolean(findApp(mcpApps, name))
         const isSearch = name === 'webSearch'
         const isQuestion = name === 'askUserQuestion'
         const input = part.input
@@ -148,7 +163,13 @@ function ThoughtSteps({
         return (
           <ChainOfThoughtStep
             key={part.toolCallId}
-            icon={isSearch ? Globe : undefined}
+            icon={
+              isSearch ? (
+                Globe
+              ) : isApp ? (
+                <Excalidraw className="size-3 shrink-0" aria-hidden />
+              ) : undefined
+            }
             label={
               isSearch
                 ? query || 'Searching the web'
@@ -207,6 +228,7 @@ export function ConversationView({
   renderToolPart,
   onAddQuote,
   history,
+  mcpApps,
 }: ConversationViewProps) {
   const selectionScopeId = useId()
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
@@ -283,7 +305,11 @@ export function ConversationView({
             return (
               <Message key={message.id} from={message.role}>
                 <div className="flex w-full flex-col gap-2 group-[.is-user]:items-end">
-                  <ThoughtSteps message={message} streaming={streaming} />
+                  <ThoughtSteps
+                    message={message}
+                    streaming={streaming}
+                    mcpApps={mcpApps}
+                  />
                   {sources.length > 0 && (
                     <Sources>
                       <SourcesTrigger count={sources.length} />
@@ -326,6 +352,14 @@ export function ConversationView({
                               {part.text}
                             </MessageResponse>
                           </MessageContent>
+                        ) : isToolUIPart(part) &&
+                          findApp(mcpApps, toolName(part)) ? (
+                          <McpAppCard
+                            key={part.toolCallId}
+                            part={part}
+                            toolName={toolName(part)}
+                            app={findApp(mcpApps, toolName(part))!}
+                          />
                         ) : isToolUIPart(part) && renderToolPart ? (
                           <div key={part.toolCallId}>
                             {renderToolPart(part)}

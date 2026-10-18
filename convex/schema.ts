@@ -6,6 +6,7 @@ import {
   draftContent,
   graphJobStatus,
   graphMessageSource,
+  mcpAppMeta,
   turn,
 } from './chat/validators'
 import { memoryFields, memoryLinkType } from './memory/validators'
@@ -94,6 +95,18 @@ export default defineSchema({
     status: graphJobStatus,
     updatedAt: v.number(),
   }).index('by_conversationId_and_status', ['conversationId', 'status']),
+  /** Shared MCP App UI resources from the fixed Excalidraw server, refreshed by chat turns. */
+  mcpAppResources: defineTable({
+    server: v.literal('excalidraw'),
+    uri: v.string(),
+    html: v.string(),
+    meta: v.optional(mcpAppMeta),
+    /** Model-visible tools whose results render this resource. */
+    toolNames: v.array(v.string()),
+    /** Tools the embedded app may call back through the authenticated proxy. */
+    appToolNames: v.array(v.string()),
+    updatedAt: v.number(),
+  }).index('by_server_and_uri', ['server', 'uri']),
   memories: defineTable({
     ownerTokenIdentifier: v.string(),
     ...memoryFields,

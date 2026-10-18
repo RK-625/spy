@@ -8,6 +8,7 @@ export const turn = v.object({
   mode: v.string(),
   useWebSearch: v.optional(v.boolean()),
   useBuildMode: v.optional(v.boolean()),
+  useExcalidraw: v.optional(v.boolean()),
 })
 
 export const conversationSummary = v.object({
@@ -66,3 +67,23 @@ export const graphPaneStatus = v.union(
   v.literal('running'),
   v.literal('failed'),
 )
+
+/** Sanitized MCP App resource metadata (sandbox CSP origins and requested permissions). */
+export const mcpAppMeta = v.object({
+  prefersBorder: v.optional(v.boolean()),
+  csp: v.optional(
+    v.object({
+      connectDomains: v.optional(v.array(v.string())),
+      resourceDomains: v.optional(v.array(v.string())),
+      frameDomains: v.optional(v.array(v.string())),
+    }),
+  ),
+  permissions: v.optional(
+    v.object({
+      camera: v.optional(v.boolean()),
+      microphone: v.optional(v.boolean()),
+      geolocation: v.optional(v.boolean()),
+      clipboardWrite: v.optional(v.boolean()),
+    }),
+  ),
+})

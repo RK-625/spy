@@ -8,6 +8,7 @@ import { GRAPH_MAINTENANCE } from './graphMaintenance'
 import { GRAPH_ONTOLOGY } from './graphOntology'
 import { ASK_USER_QUESTION_AGENT_BULLET } from './askUserQuestion'
 import { DELETE_MEMORIES_AGENT_BULLET } from './deleteMemories'
+import { EXCALIDRAW_AGENT_BULLET } from './excalidraw'
 import {
   GET_ALL_MEMORIES_BUILD_BULLET,
   GET_MEMORIES_CHAT_BULLET,
@@ -52,9 +53,11 @@ const WEB_CONTENT =
 export function chatInstructions({
   buildMode,
   webSearch,
+  excalidraw = false,
 }: {
   buildMode: boolean
   webSearch: boolean
+  excalidraw?: boolean
 }): string {
   const bullets = buildMode
     ? [
@@ -71,6 +74,7 @@ export function chatInstructions({
       ]
   bullets.push(`- **askUserQuestion**: ${ASK_USER_QUESTION_AGENT_BULLET}`)
   if (webSearch) bullets.push(`- **webSearch**: ${WEB_SEARCH_AGENT_BULLET}`)
+  if (excalidraw) bullets.push(`- **Excalidraw**: ${EXCALIDRAW_AGENT_BULLET}`)
 
   const toolset = buildMode
     ? `## These are the tools you can use to build the user's notes, retrieve existing ones, ask the user questions when needed${webSearch ? ', and interact with the web' : ''}:`
