@@ -1,0 +1,6 @@
+.env
+.env.local
+config/secrets.json
+!.env
+.env
+.env.local
