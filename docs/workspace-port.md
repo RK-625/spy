@@ -62,7 +62,7 @@ has a separate selection scope. Production route composition, chat transport, at
 | Feature                                | Original source                                                   | Required integration                                                                     |
 | -------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Chat tools | `src/components/chat`, `src/contexts/ChatContext.tsx`, `src/ai`   | Tool handlers and memory retrieval/build mode |
-| Notes hierarchy, detail and learning   | `src/components/chat/sidebar/notes`, `workspace`, `src/lib/notes` | Convex notes/relationships and replacement for server-side Falkor reads                  |
+| Notes learning/review sessions         | `src/components/chat/workspace/learning`, `src/lib/notes/session` | Session reducer and learning UI over the ported note detail                              |
 | Knowledge graph                        | `src/components/graph`, `src/contexts/GraphTopologyContext.tsx`   | Graph topology subscription and browser-only Sigma/WebGL rendering                       |
 
 ## Provider ownership
@@ -165,3 +165,7 @@ FalkorDB is replaced by Convex. The source used it only for node/edge storage, s
 | Atomic Cypher writes | Transactional internal mutations |
 
 Vector search runs only in actions and returns similarity rather than distance, so the source 0.25 distance ceiling becomes a 0.75 similarity floor. Full-graph reads are bounded and report `truncated`. Tool-facing functions are internal and receive the owner from the calling conversation, never from model input. Writes, embeddings and search are in `convex/memory/actions.ts` (Node) and `store.ts`. Questions are embedded with the owner's saved Google key (`gemini-embedding-2`, 1536 dims) before one transactional upsert. Deletion removes questions and incident links with the Memory. Search returns source-style distance (`1 - similarity`). `convex/chat/tools/memory.ts` registers the retrieval tools on every turn and the write tools only in build mode. Owner and build mode are re-read from the stored turn on each call. The background graph-maintainer agent, its per-chat graph history and fork graph copying remain.
+
+## Notes sidebar and detail
+
+`src/features/notes/` ports the source family sidebar, note header, workspace and read-only Milkdown document. `useNotesTopology` subscribes to `memory.topology.get` and builds the shared forest (`shared/notes/hierarchy.ts`); `/notes/$noteId` reads `memory.topology.memoryById`. Both are reactive, so build-mode writes appear without refresh. The authenticated layout picks the sidebar body by route. Learning sessions are the remaining Notes port.

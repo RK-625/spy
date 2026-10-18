@@ -20,3 +20,36 @@
     animation: none;
   }
 }
+
+/* Source note chrome (spy-frontend globals.css): ghost controls and child flyouts. */
+.note-control {
+  background: transparent;
+  min-height: var(--control-toolbar-box);
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  transition-property: background-color, color, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-chrome);
+}
+.note-control:hover {
+  background: var(--surface-hover);
+}
+.note-control svg {
+  width: 1em;
+  height: 1em;
+}
+
+.notes-children-flyout {
+  @apply z-50 w-64 overflow-y-auto overscroll-contain rounded-lg border border-border-subtle bg-popover text-popover-foreground shadow-lg;
+}
+
+.notes-children-flyout-item {
+  @apply flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-[0.8125rem] text-text-primary transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-chrome);
+}
+
+.notes-children-flyout-item[aria-current='page'] {
+  background: var(--surface-focus);
+}

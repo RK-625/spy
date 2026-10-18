@@ -15,6 +15,8 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedGraphRouteImport } from './routes/_authenticated/graph'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedNotesIndexRouteImport } from './routes/_authenticated/notes.index'
+import { Route as AuthenticatedNotesNoteIdRouteImport } from './routes/_authenticated/notes.$noteId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -46,6 +48,17 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedNotesIndexRoute = AuthenticatedNotesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedNotesRoute,
+} as any)
+const AuthenticatedNotesNoteIdRoute =
+  AuthenticatedNotesNoteIdRouteImport.update({
+    id: '/$noteId',
+    path: '/$noteId',
+    getParentRoute: () => AuthenticatedNotesRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -57,16 +70,19 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/chat': typeof AuthenticatedChatRoute
   '/graph': typeof AuthenticatedGraphRoute
-  '/notes': typeof AuthenticatedNotesRoute
+  '/notes': typeof AuthenticatedNotesRouteWithChildren
+  '/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/notes/': typeof AuthenticatedNotesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/chat': typeof AuthenticatedChatRoute
   '/graph': typeof AuthenticatedGraphRoute
-  '/notes': typeof AuthenticatedNotesRoute
   '/': typeof AuthenticatedIndexRoute
+  '/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/notes': typeof AuthenticatedNotesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -74,15 +90,32 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/graph': typeof AuthenticatedGraphRoute
-  '/_authenticated/notes': typeof AuthenticatedNotesRoute
+  '/_authenticated/notes': typeof AuthenticatedNotesRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/notes/$noteId': typeof AuthenticatedNotesNoteIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/notes/': typeof AuthenticatedNotesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/chat' | '/graph' | '/notes' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/chat'
+    | '/graph'
+    | '/notes'
+    | '/notes/$noteId'
+    | '/api/auth/$'
+    | '/notes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/chat' | '/graph' | '/notes' | '/' | '/api/auth/$'
+  to:
+    | '/login'
+    | '/chat'
+    | '/graph'
+    | '/'
+    | '/notes/$noteId'
+    | '/api/auth/$'
+    | '/notes'
   id:
     | '__root__'
     | '/_authenticated'
@@ -91,7 +124,9 @@ export interface FileRouteTypes {
     | '/_authenticated/graph'
     | '/_authenticated/notes'
     | '/_authenticated/'
+    | '/_authenticated/notes/$noteId'
     | '/api/auth/$'
+    | '/_authenticated/notes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +179,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/notes/': {
+      id: '/_authenticated/notes/'
+      path: '/'
+      fullPath: '/notes/'
+      preLoaderRoute: typeof AuthenticatedNotesIndexRouteImport
+      parentRoute: typeof AuthenticatedNotesRoute
+    }
+    '/_authenticated/notes/$noteId': {
+      id: '/_authenticated/notes/$noteId'
+      path: '/$noteId'
+      fullPath: '/notes/$noteId'
+      preLoaderRoute: typeof AuthenticatedNotesNoteIdRouteImport
+      parentRoute: typeof AuthenticatedNotesRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -154,17 +203,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedNotesRouteChildren {
+  AuthenticatedNotesNoteIdRoute: typeof AuthenticatedNotesNoteIdRoute
+  AuthenticatedNotesIndexRoute: typeof AuthenticatedNotesIndexRoute
+}
+
+const AuthenticatedNotesRouteChildren: AuthenticatedNotesRouteChildren = {
+  AuthenticatedNotesNoteIdRoute: AuthenticatedNotesNoteIdRoute,
+  AuthenticatedNotesIndexRoute: AuthenticatedNotesIndexRoute,
+}
+
+const AuthenticatedNotesRouteWithChildren =
+  AuthenticatedNotesRoute._addFileChildren(AuthenticatedNotesRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedGraphRoute: typeof AuthenticatedGraphRoute
-  AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
+  AuthenticatedNotesRoute: typeof AuthenticatedNotesRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedGraphRoute: AuthenticatedGraphRoute,
-  AuthenticatedNotesRoute: AuthenticatedNotesRoute,
+  AuthenticatedNotesRoute: AuthenticatedNotesRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
