@@ -27,3 +27,10 @@
 - Connected to the user's development deployment `secret-nightingale-447`. Set missing backend `SITE_URL` to `http://localhost:3000` and generated `BETTER_AUTH_SECRET` directly for deployment storage; no secret values were printed or committed.
 - Verified both variable names exist and `bunx convex dev --once --typecheck enable` completed with “Convex functions ready”. Synced the generated Better Auth component API and typed environment declarations.
 - Better Auth server, HTTP endpoints, and sign-in method configuration remain the next implementation step.
+
+## 2026-10-18 — Better Auth server and HTTP routes
+
+- Added the Better Auth server using the Convex component adapter, typed backend environment variables, trusted site origin, email/password login, and Convex token integration. Email verification is disabled for this initial sprint.
+- Mounted Better Auth HTTP routes and regenerated the Convex API types. Deployed successfully to development deployment `secret-nightingale-447`.
+- Validation: Convex TypeScript, targeted ESLint, and whitespace checks passed. `convex dev --once --typecheck enable` reported functions ready; the deployed `/api/auth/get-session` returned HTTP 200 with `null` for an unauthenticated request.
+- TanStack Start auth proxy/provider, account screens, and SPY profile provisioning remain separate sprints. Signup/login/logout have not yet been verified end to end through the web application.
