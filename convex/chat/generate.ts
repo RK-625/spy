@@ -49,7 +49,12 @@ export const reply = internalAction({
       )
       const buildMode = context.turn.useBuildMode === true
       const tools: ToolSet = {
-        ...memoryTools(ctx, args, controller.signal, buildMode),
+        ...memoryTools(
+          ctx,
+          () => ctx.runQuery(internal.chat.runtime.memoryAccess, args),
+          controller.signal,
+          buildMode,
+        ),
         askUserQuestion,
       }
       if (searchEnabled)

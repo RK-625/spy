@@ -49,3 +49,20 @@ export const draftContent = v.object({
   }),
   uploadIds: v.array(v.id('chatUploads')),
 })
+
+export const graphMessageSource = v.union(v.literal('chat'), v.literal('graph'))
+
+export const graphJobStatus = v.union(
+  v.literal('queued'),
+  v.literal('running'),
+  v.literal('done'),
+  v.literal('failed'),
+  v.literal('skipped'),
+)
+
+/** Pane-facing maintainer state; "idle" is a finished run. */
+export const graphPaneStatus = v.union(
+  v.literal('idle'),
+  v.literal('running'),
+  v.literal('failed'),
+)

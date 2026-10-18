@@ -1,7 +1,13 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { encryptedKey, providerId } from './providers/validators'
-import { conversationSummary, draftContent, turn } from './chat/validators'
+import {
+  conversationSummary,
+  draftContent,
+  graphJobStatus,
+  graphMessageSource,
+  turn,
+} from './chat/validators'
 import { memoryFields, memoryLinkType } from './memory/validators'
 import { EMBEDDING_DIMENSION } from './memory/policy'
 
@@ -67,6 +73,27 @@ export default defineSchema({
     'ownerTokenIdentifier',
     'requestId',
   ]),
+  /** Bounded, append-only maintainer transcript per conversation (one ModelMessage JSON per row). */
+  graphMessages: defineTable({
+    conversationId: v.id('conversations'),
+    sequence: v.number(),
+    /** Chat turn order the message belongs to; forks copy rows up to the forked order. */
+    order: v.number(),
+    graphSource: graphMessageSource,
+    json: v.string(),
+  }).index('by_conversationId_and_sequence', ['conversationId', 'sequence']),
+  /** One maintainer job per eligible chat turn, serialized per conversation. */
+  graphJobs: defineTable({
+    conversationId: v.id('conversations'),
+    ownerTokenIdentifier: v.string(),
+    promptMessageId: v.string(),
+    order: v.number(),
+    model: v.string(),
+    mode: v.string(),
+    runAgent: v.boolean(),
+    status: graphJobStatus,
+    updatedAt: v.number(),
+  }).index('by_conversationId_and_status', ['conversationId', 'status']),
   memories: defineTable({
     ownerTokenIdentifier: v.string(),
     ...memoryFields,

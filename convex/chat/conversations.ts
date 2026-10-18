@@ -295,6 +295,9 @@ export const remove = mutation({
       internal.chat.files.releaseConversationFiles,
       { conversationId: conversation._id },
     )
+    await ctx.scheduler.runAfter(0, internal.chat.graph.purge, {
+      conversationId: conversation._id,
+    })
     await ctx.db.delete('conversations', conversation._id)
     return null
   },

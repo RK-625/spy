@@ -6,6 +6,7 @@ import { encryptedKey, providerId } from '../providers/validators'
 import { getKeyRequirements } from '../../shared/providers'
 import { resolveChatModel } from '../../shared/models'
 import { turn } from './validators'
+import { enqueueGraphJob } from './graph'
 
 export const runArgs = {
   conversationId: v.id('conversations'),
@@ -24,6 +25,8 @@ export const begin = internalMutation({
         activeTurn: undefined,
         status: 'idle',
       })
+      // A stopped turn still records its user message in graph history.
+      await enqueueGraphJob(ctx, chat, chat.activeTurn, false)
       return false
     }
     if (chat.status !== 'queued') return false
@@ -129,6 +132,13 @@ export const finish = internalMutation({
           ? 'Couldn’t complete this response. Check your provider key, model access and connection, then try again.'
           : undefined,
       })
+      // Failed and stopped turns record the user message only; completed turns start the maintainer.
+      await enqueueGraphJob(
+        ctx,
+        chat,
+        chat.activeTurn,
+        !args.failed && chat.status === 'streaming',
+      )
     }
     return null
   },
@@ -152,6 +162,7 @@ export const recover = internalMutation({
         updatedAt: Date.now(),
         error: 'The response timed out. You can send another message.',
       })
+      await enqueueGraphJob(ctx, chat, chat.activeTurn, false)
     }
     return null
   },

@@ -47,11 +47,17 @@ import {
 } from '../prompts/upsertMemory'
 import type { JSONSchema7, ToolSet } from 'ai'
 import type { ActionCtx } from '../../_generated/server'
-import type { Id } from '../../_generated/dataModel'
 import type { UpsertMemoryInput } from '../../memory/rules'
 import type { LinkInput, Memory, MemoryLinkType } from '../../memory/validators'
 
-type Turn = { conversationId: Id<'conversations'>; requestId: string }
+/**
+ * Server-resolved owner for the current run, or null when the run may no
+ * longer touch the graph. Writes additionally need buildMode.
+ */
+export type MemoryAccess = () => Promise<{
+  ownerTokenIdentifier: string
+  buildMode: boolean
+} | null>
 
 const UNAVAILABLE = { error: 'Memory tools are unavailable for this turn.' }
 const BUILD_ONLY = {
@@ -141,16 +147,14 @@ function errorText(error: unknown, fallback: string) {
 
 /**
  * Source product memory tools. Retrieval is always on; writes register only
- * in build mode and recheck the stored turn on every call.
+ * in build mode (or for the graph maintainer) and recheck access on every call.
  */
 export function memoryTools(
   ctx: ActionCtx,
-  turn: Turn,
+  access: MemoryAccess,
   signal: AbortSignal,
   buildMode: boolean,
 ): ToolSet {
-  const access = () => ctx.runQuery(internal.chat.runtime.memoryAccess, turn)
-
   const tools: ToolSet = {
     searchMemories: tool({
       description: searchMemoriesToolDescription,
