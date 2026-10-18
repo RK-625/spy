@@ -9,6 +9,7 @@ import { api } from '../../../convex/_generated/api'
 import { ChatWorkspace } from './chat-workspace'
 import { useSavedDraft } from './storage/use-saved-draft'
 import { getPendingAskUserQuestion } from './ask-user-question'
+import { GraphPane } from './graph-pane/graph-pane'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import type { ComposerPreferences, PromptInputMessage } from './types'
@@ -286,9 +287,10 @@ function LiveChat({
         : 'ready'
   return (
     <main aria-label="Chat workspace" className="relative h-full min-h-0">
+      <GraphPane conversationId={conversation?._id} />
       {draft.state !== 'saved' && (
         <div
-          className="absolute right-4 top-2 z-10 rounded bg-surface-chat/90 px-2 py-1 text-xs text-text-secondary"
+          className="absolute right-16 top-2 z-10 rounded bg-surface-chat/90 px-2 py-1 text-xs text-text-secondary"
           role="status"
         >
           {draft.state === 'saving' ? (

@@ -99,6 +99,7 @@ export const create = mutation({
         sourceThreadId: source.threadId,
         targetThreadId: threadId,
         messageId: args.messageId,
+        upToOrder: message.order,
       },
       {
         startAsync: true,
@@ -121,6 +122,8 @@ export const copy = workflow
       sourceThreadId: v.string(),
       targetThreadId: v.string(),
       messageId: v.string(),
+      // Optional so workflows started before graph history existed still replay.
+      upToOrder: v.optional(v.number()),
     },
     returns: v.null(),
   })
@@ -138,6 +141,24 @@ export const copy = workflow
       )
       cursor = page.cursor
       done = page.done
+    }
+    // Graph history for the selected prefix: every turn up to the forked reply's order.
+    if (args.upToOrder !== undefined) {
+      cursor = null
+      done = false
+      while (!done) {
+        const page: { cursor: string; done: boolean } = await step.runMutation(
+          internal.chat.graph.copyHistory,
+          {
+            sourceConversationId: args.sourceConversationId,
+            conversationId: args.conversationId,
+            upToOrder: args.upToOrder,
+            cursor,
+          },
+        )
+        cursor = page.cursor
+        done = page.done
+      }
     }
     // The component copies complete Agent orders (including tool steps and reasoning).
     // Do not retry a partially committed clone action; a failed destination stays blocked.
