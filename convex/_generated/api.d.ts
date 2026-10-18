@@ -18,6 +18,7 @@ import type * as chat_messages from "../chat/messages.js";
 import type * as chat_models from "../chat/models.js";
 import type * as chat_ownership from "../chat/ownership.js";
 import type * as chat_runtime from "../chat/runtime.js";
+import type * as chat_tools_search from "../chat/tools/search.js";
 import type * as chat_upload from "../chat/upload.js";
 import type * as chat_validators from "../chat/validators.js";
 import type * as http from "../http.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "chat/models": typeof chat_models;
   "chat/ownership": typeof chat_ownership;
   "chat/runtime": typeof chat_runtime;
+  "chat/tools/search": typeof chat_tools_search;
   "chat/upload": typeof chat_upload;
   "chat/validators": typeof chat_validators;
   http: typeof http;

@@ -55,7 +55,7 @@ hints and appends user messages in memory. It never calls a model or backend.
 `features/chat/chat-workspace.tsx` now composes the conversation and composer,
 including the source selection toolbar: completed message excerpts preserve
 Markdown structure and become quote chips in the shared draft. Each conversation
-has a separate selection scope. Production route composition, chat transport, attachment storage and durable drafts are connected; forks are connected; tools remain.
+has a separate selection scope. Production route composition, chat transport, attachment storage, durable drafts and forks are connected. Web search is executable; the remaining tools follow.
 
 ## Remaining feature ports
 
@@ -133,3 +133,11 @@ Public creation derives ownership from the session and validates the selected me
 The app retains source upload references in bounded pages, conservatively including uploads from later messages because existing references are conversation-scoped. Only the selected history prefix is copied; additional retained references do not expose later messages. References are released when the fork is deleted. Future graph-message copying will be connected with the graph feature; no graph history exists in the current app yet.
 
 Production build, lint/type checks and development deployment passed. No account/key/provider/runtime or browser tests were run; manual verification remains pending. Notes, Graph and executable chat tools remain to port. The original Edit icon still has no source handler.
+
+## Optional web search tool
+
+The source globe toggle is connected to each accepted turn. Both the user's toggle and their saved Exa key are required; the server checks them before exposing the tool and resolves the active turn's owner/key again for each execution. Credentials are decrypted only in the Node tool and sent to the fixed Exa endpoint, with no shared-key fallback or plaintext history/browser storage.
+
+The [Exa Search API](https://exa.ai/docs/reference/search) receives the same source options: five results with text limited to 5,000 characters per result. The app validates query input, bounds response bytes and fields, permits HTTP(S) result links, cancels on the turn signal/25-second timeout and returns safe failures without provider bodies. Agent persists tool calls/results and runs the source 25-step search budget. The ported reasoning timeline shows the query, result links and actionable search failures; the model can cite returned URLs. Clicking the globe without a key opens Tools settings.
+
+Build, lint/type checks and development deployment passed. No Exa or model requests, account/key tests or browser/runtime tests were run. Ask-user interaction, memory retrieval/writes, build mode and Excalidraw remain to connect, alongside Notes and Graph.

@@ -135,6 +135,15 @@ function ThoughtSteps({
           isSearch && part.state === 'output-available'
             ? searchResults(part.output)
             : []
+        const searchError =
+          isSearch &&
+          part.state === 'output-available' &&
+          part.output &&
+          typeof part.output === 'object' &&
+          'error' in part.output &&
+          typeof part.output.error === 'string'
+            ? part.output.error.slice(0, 250)
+            : undefined
         return (
           <ChainOfThoughtStep
             key={part.toolCallId}
@@ -146,7 +155,7 @@ function ThoughtSteps({
                 ? 'The tool could not finish.'
                 : part.state === 'output-denied'
                   ? 'Tool request declined.'
-                  : undefined
+                  : searchError
             }
           >
             {results.length > 0 && (

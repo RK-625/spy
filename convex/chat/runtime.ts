@@ -140,3 +140,36 @@ export const expireReceipt = internalMutation({
     return null
   },
 })
+
+/** Re-resolve optional search credentials from the active stored turn, never a caller-supplied owner. */
+export const webSearchKey = internalQuery({
+  args: runArgs,
+  returns: v.union(
+    v.null(),
+    v.object({ ownerTokenIdentifier: v.string(), encrypted: encryptedKey }),
+  ),
+  handler: async (ctx, args) => {
+    const chat = await ctx.db.get('conversations', args.conversationId)
+    if (
+      !chat ||
+      chat.status !== 'streaming' ||
+      chat.activeTurn?.requestId !== args.requestId ||
+      !chat.activeTurn.useWebSearch
+    )
+      return null
+    const key = await ctx.db
+      .query('providerKeys')
+      .withIndex('by_ownerTokenIdentifier_and_provider', (q) =>
+        q
+          .eq('ownerTokenIdentifier', chat.ownerTokenIdentifier)
+          .eq('provider', 'exa'),
+      )
+      .unique()
+    return key
+      ? {
+          ownerTokenIdentifier: chat.ownerTokenIdentifier,
+          encrypted: key.encrypted,
+        }
+      : null
+  },
+})

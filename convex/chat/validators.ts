@@ -6,6 +6,7 @@ export const turn = v.object({
   order: v.number(),
   model: v.string(),
   mode: v.string(),
+  useWebSearch: v.optional(v.boolean()),
 })
 
 export const conversationSummary = v.object({
