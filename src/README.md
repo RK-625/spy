@@ -47,6 +47,10 @@ src/
 - `/login` is public. Its independent UI lives in
   `features/auth/login-page.tsx`; `routes/login.tsx` only composes the page and
   redirects existing sessions.
+- Access is limited to existing Better Auth users with password credentials.
+  Public signup, account deletion, and account linking/unlinking are disabled
+  in the backend. The login page has no account-management controls; this sprint
+  does not create SPY profiles or add onboarding.
 - Put workspace routes under the pathless `_authenticated` layout. It checks
   the server-validated session before rendering. `/` is intentionally blank.
 - `lib/auth-server.ts` connects server-side session checks and the same-origin
@@ -65,7 +69,9 @@ src/
   `http://localhost:3000`). Keep `VITE_CONVEX_SITE_URL` configured in the app
   environment. No browser secret is needed.
 - With the local app running, `bun run test:auth` verifies guest redirects,
-  forged cookies, proxy behavior, rejected credentials, and origin protection.
+  forged cookies, proxy behavior, rejected credentials, origin protection, and
+  disabled signup/account-management endpoints. The script reads `.env.local`
+  when present; `VITE_CONVEX_SITE_URL` selects the direct backend signup check.
   Set `AUTH_TEST_URL` to test a different configured app origin.
 - Route guards protect page access. Future Convex data functions must also
   validate identity and document ownership; the existing starter functions

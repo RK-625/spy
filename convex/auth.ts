@@ -17,7 +17,17 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
     database: authComponentClient.adapter(ctx),
     emailAndPassword: {
       enabled: true,
+      disableSignUp: true,
       requireEmailVerification: false,
     },
+    user: {
+      deleteUser: { enabled: false },
+    },
+    disabledPaths: [
+      "/delete-user",
+      "/delete-user/callback",
+      "/link-social",
+      "/unlink-account",
+    ],
     plugins: [convex({ authConfig })],
   });

@@ -22,6 +22,7 @@ test('login is server rendered and publicly accessible', async () => {
   assert.match(html, /Welcome back\./)
   assert.match(html, /autocomplete="current-password"/i)
   assert.match(html, /type="password"/)
+  assert.doesNotMatch(html, /Create an account|Create account|new-password/)
 })
 
 test('a forged session cookie cannot unlock the workspace', async () => {
@@ -68,3 +69,47 @@ test('auth writes from an untrusted origin are rejected', async () => {
   })
   assert.equal(response.status, 403)
 })
+
+for (const [label, base] of [
+  ['app proxy', origin],
+  ['Convex HTTP endpoint', process.env.VITE_CONVEX_SITE_URL],
+]) {
+  test(`public signup is disabled through ${label}`, async () => {
+    assert.ok(
+      base,
+      'VITE_CONVEX_SITE_URL must be configured for the direct backend check',
+    )
+    const response = await fetch(new URL('/api/auth/sign-up/email', base), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin },
+      // A deliberately short password also prevents account creation if signup
+      // is accidentally re-enabled. Check the specific disabled-signup error.
+      body: JSON.stringify({
+        name: 'Signup disabled check',
+        email: 'disabled-signup@example.com',
+        password: 'x',
+      }),
+    })
+    assert.equal(response.status, 400)
+    assert.equal(
+      (await response.json()).code,
+      'EMAIL_PASSWORD_SIGN_UP_DISABLED',
+    )
+  })
+}
+
+for (const path of [
+  '/delete-user',
+  '/delete-user/callback',
+  '/link-social',
+  '/unlink-account',
+]) {
+  test(`account-management endpoint ${path} is disabled`, async () => {
+    const response = await request(`/api/auth${path}`, {
+      method: path.endsWith('/callback') ? 'GET' : 'POST',
+      headers: { 'content-type': 'application/json', origin },
+      ...(path.endsWith('/callback') ? {} : { body: '{}' }),
+    })
+    assert.equal(response.status, 404)
+  })
+}
