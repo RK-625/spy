@@ -119,3 +119,7 @@ The authenticated `/chat/upload` HTTP action accepts up to 10 MB of bytes per fi
 Bounded reference records retain uploads while any draft or conversation uses them. Unreferenced uploads are removed after a 24-hour grace period; conversation deletion releases references in batches. Sending clears only the accepted draft version. Drafts and credentials remain separate: provider keys retain their existing encrypted server-only path.
 
 Production build, lint, application/Convex type checks and development deployment passed. Account/key/upload/model browser or runtime tests were not run; the user will verify manually. Provider file support still depends on the selected model, as in the original workspace. Web publishing remains pending without a configured host.
+
+## Conversation palette search
+
+The shared palette accepts already-filtered feature groups. `features/chat/search/chat-command-palette.tsx` loads recent chats when empty and uses the owner-filtered Convex title index while typing. Remote and local items share keyboard selection and close-before-navigation handling; loading, no-match and load failures are visible. Only an open palette in a configured workspace subscribes to history queries. No account/provider tests or model calls were run. The original Edit icon is a placeholder without a handler; a destructive edit/resend behavior is outside the source port.

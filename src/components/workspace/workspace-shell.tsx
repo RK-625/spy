@@ -7,8 +7,9 @@ import { CommandPalette } from './search/command-palette'
 import { WORKSPACE_ROUTES } from './navigation'
 import { ProviderSetup } from './settings/provider-setup'
 import type { SettingsPane } from './settings/workspace-settings'
+import type { CommandPaletteProps } from './search/command-palette'
 import type { ProviderKeySettings } from '~/lib/providers/types'
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import type { WorkspacePath } from './navigation'
 import { AppToaster } from '~/components/ui/feedback/sonner'
 import { TooltipProvider } from '~/components/ui/overlays/tooltip'
@@ -21,6 +22,7 @@ export function WorkspaceShell({
   sidebarContent,
   onNewChat,
   settings,
+  searchComponent: SearchComponent = CommandPalette,
 }: {
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
@@ -28,6 +30,7 @@ export function WorkspaceShell({
   children: ReactNode
   sidebarContent?: ReactNode
   onNewChat?: () => void
+  searchComponent?: ComponentType<CommandPaletteProps>
   settings?: {
     open: boolean
     pane: SettingsPane
@@ -111,11 +114,11 @@ export function WorkspaceShell({
             children
           )}
         </div>
-        <CommandPalette
+        <SearchComponent
           open={searchOpen}
           onOpenChange={setSearchOpen}
           groups={commandGroups}
-          placeholder="Search actions…"
+          placeholder="Search conversations, actions…"
           trigger={null}
           shortcutKey="k"
           showThemeGroup

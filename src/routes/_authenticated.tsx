@@ -7,6 +7,7 @@ import {
 import { SessionGuard } from '~/features/auth/session-guard'
 import { ProviderWorkspace } from '~/features/providers/provider-workspace'
 import { ChatRecents } from '~/features/chat/sidebar/recents'
+import { ChatCommandPalette } from '~/features/chat/search/chat-command-palette'
 import { authClient, signOut } from '~/lib/auth-client'
 
 export const Route = createFileRoute('/_authenticated')({
@@ -29,6 +30,7 @@ function AuthenticatedWorkspace() {
           user={session.user}
           onSignOut={signOut}
           sidebarContent={<ChatRecents />}
+          searchComponent={ChatCommandPalette}
           onNewChat={() => {
             void navigate({
               to: '/chat',

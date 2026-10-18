@@ -74,6 +74,10 @@ interface CommandPaletteTriggerProps extends React.ButtonHTMLAttributes<HTMLButt
 
 export interface CommandPaletteProps {
   groups?: Array<CommandPaletteGroupDef>
+  /** Authenticated feature results are already filtered by their data source. */
+  remoteGroups?: Array<CommandPaletteGroupDef>
+  remoteStatus?: React.ReactNode
+  onQueryChange?: (query: string) => void
   /** Opt-in Light / Dark / System theme actions. */
   showThemeGroup?: boolean
   placeholder?: string
@@ -180,6 +184,9 @@ function CommandPaletteTrigger({
 
 function CommandPalette({
   groups = [],
+  remoteGroups = [],
+  remoteStatus,
+  onQueryChange,
   showThemeGroup = false,
   placeholder = 'Search conversations, actions…',
   shortcutKey = 'k',
@@ -202,6 +209,9 @@ function CommandPalette({
   })
   const [searchQuery, setSearchQuery] = React.useState('')
   const debouncedQuery = useDebouncedValue(searchQuery, 120)
+  React.useEffect(() => {
+    onQueryChange?.(paletteOpen ? debouncedQuery : '')
+  }, [debouncedQuery, onQueryChange, paletteOpen])
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [isMac, setIsMac] = React.useState(true)
 
@@ -298,8 +308,9 @@ function CommandPalette({
   )
 
   const filteredGroups = React.useMemo(
-    () =>
-      groups
+    () => [
+      ...remoteGroups.filter((group) => group.items.length > 0),
+      ...groups
         .map((group) => ({
           ...group,
           items: group.items.filter((item) =>
@@ -307,7 +318,8 @@ function CommandPalette({
           ),
         }))
         .filter((group) => group.items.length > 0),
-    [debouncedQuery, groups],
+    ],
+    [debouncedQuery, groups, remoteGroups],
   )
 
   const filteredThemeItems = React.useMemo(
@@ -517,6 +529,7 @@ function CommandPalette({
                 className="w-full min-w-0 touch-manipulation bg-transparent text-[16px] text-foreground leading-normal outline-none placeholder:text-muted-foreground md:text-sm"
                 enterKeyHint="search"
                 inputMode="search"
+                maxLength={200}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 onKeyDown={handleListKeyDown}
                 placeholder={placeholder}
@@ -546,6 +559,14 @@ function CommandPalette({
                 className="h-full max-h-[inherit] overflow-y-auto overscroll-contain p-2 [-webkit-overflow-scrolling:touch]"
                 onKeyDown={handleListKeyDown}
               >
+                {remoteStatus && (
+                  <div
+                    role="status"
+                    className="px-3 py-2 text-xs text-muted-foreground"
+                  >
+                    {remoteStatus}
+                  </div>
+                )}
                 {resolvedItems.length === 0 ? (
                   <div className="px-3 py-10 text-center text-muted-foreground text-sm">
                     {emptyMessage}

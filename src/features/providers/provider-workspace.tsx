@@ -5,7 +5,8 @@ import { useAction, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { WorkspaceAccessContext } from './workspace-access'
 import type { SettingsPane } from '~/components/workspace/settings/workspace-settings'
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import type { CommandPaletteProps } from '~/components/workspace/search/command-palette'
 import type {
   ProviderDefinition,
   ProviderKeySettings,
@@ -19,12 +20,14 @@ export function ProviderWorkspace({
   children,
   sidebarContent,
   onNewChat,
+  searchComponent,
 }: {
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
   children: ReactNode
   sidebarContent?: ReactNode
   onNewChat?: () => void
+  searchComponent?: ComponentType<CommandPaletteProps>
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsPane, setSettingsPane] = useState<SettingsPane>('general')
@@ -108,6 +111,7 @@ export function ProviderWorkspace({
         }}
         sidebarContent={keys.ready ? sidebarContent : null}
         onNewChat={onNewChat}
+        searchComponent={searchComponent}
       >
         {children}
       </WorkspaceShell>
