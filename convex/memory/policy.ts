@@ -14,10 +14,16 @@ export const MEMORY_SEARCH_MAX_QUESTIONS = 5
 export const MEMORY_SEARCH_TOP_K = 10
 
 /**
- * Source ceiling was Falkor cosine DISTANCE 0.25. Convex returns cosine
- * similarity (1 = identical), so the equivalent floor is 1 - 0.25.
+ * Per-probe cosine DISTANCE ceiling (0 = identical), as in the source. Convex
+ * returns similarity, so hits report distance = 1 - similarity.
  */
-export const MEMORY_SEARCH_MIN_SCORE = 0.75
+export const MEMORY_SEARCH_MAX_DISTANCE = 0.25
+
+/** Max characters per agent-authored retrieval or search question. */
+export const MEMORY_QUESTION_MAX_LENGTH = 500
+
+/** Bound for one deleteMemories call. */
+export const MEMORY_DELETE_MAX_IDS = 50
 
 /** Max independently configured Memory lookups in one getMemories call. */
 export const MEMORY_GET_MAX_REQUESTS = 10
