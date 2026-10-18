@@ -100,3 +100,9 @@ shell sprint, before provider settings were connected.
 No web hosting target is configured in this repository, so publishing remains
 pending. Provider-key functions are deployed to development deployment
 `secret-nightingale-447`.
+
+## Durable chat backend sprint
+
+`convex/chat/` now wraps the Agent component with server-derived ownership for every public operation. Conversations have one durable thread, indexed recents/title search, atomic prompt acceptance, request receipts, one active turn, stop fencing and a timeout recovery job. Histories and streaming deltas use bounded Agent pagination. Scheduled generation obtains the selected user's encrypted credential from the stored conversation, decrypts only in a Node action and uses the original provider factory/model choices. The shared catalog lives in `shared/models.ts`.
+
+This backend is deployed to the development target. Production chat route composition, recents UI, attachments, durable drafts, editing/forking and tools remain to connect. Static build/lint/type checks passed; no model calls or account/key tests were run. Streaming is based on the [Convex Agent streaming API](https://docs.convex.dev/agents/streaming).

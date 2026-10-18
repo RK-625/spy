@@ -2,6 +2,7 @@
  * Provider registry — the single client-safe source of truth for providers and
  * their chat models. Model execution will be wired through Convex actions separately.
  */
+import { CHAT_MODELS } from '../../../shared/models'
 import { PROVIDER_CAPABILITIES } from '../../../shared/providers'
 import type {
   AIModel,
@@ -23,14 +24,7 @@ export const providers: Array<ProviderDefinition> = [
     icon: Deepseek,
     keyPrefix: 'sk-',
     capabilities: PROVIDER_CAPABILITIES.deepseek,
-    models: [
-      {
-        id: 'deepseek-flash',
-        name: 'DeepSeek Flash',
-        mode: ['high', 'max'],
-        defaultMode: 'high',
-      },
-    ],
+    models: CHAT_MODELS.deepseek,
   },
   {
     id: 'meta',
@@ -38,14 +32,7 @@ export const providers: Array<ProviderDefinition> = [
     icon: Meta,
     keyPrefix: '',
     capabilities: PROVIDER_CAPABILITIES.meta,
-    models: [
-      {
-        id: 'muse-spark-1.3-contributor',
-        name: 'Muse Spark 1.3 Contributor',
-        mode: ['minimal', 'low', 'medium', 'high', 'xhigh', 'max'],
-        defaultMode: 'high',
-      },
-    ],
+    models: CHAT_MODELS.meta,
   },
   {
     id: 'openai',
@@ -53,20 +40,7 @@ export const providers: Array<ProviderDefinition> = [
     icon: OpenAI,
     keyPrefix: 'sk-',
     capabilities: PROVIDER_CAPABILITIES.openai,
-    models: [
-      {
-        id: 'gpt-6-sol',
-        name: 'GPT-6 Sol',
-        mode: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
-        defaultMode: 'medium',
-      },
-      {
-        id: 'gpt-6-luna',
-        name: 'GPT-6 Luna',
-        mode: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
-        defaultMode: 'medium',
-      },
-    ],
+    models: CHAT_MODELS.openai,
   },
   {
     id: 'anthropic',
@@ -74,20 +48,7 @@ export const providers: Array<ProviderDefinition> = [
     icon: Anthropic,
     keyPrefix: 'sk-ant-',
     capabilities: PROVIDER_CAPABILITIES.anthropic,
-    models: [
-      {
-        id: 'claude-opus-5-5',
-        name: 'Claude Opus 5.5',
-        mode: ['low', 'medium', 'high', 'xhigh', 'max'],
-        defaultMode: 'medium',
-      },
-      {
-        id: 'claude-sonnet-5-5',
-        name: 'Claude Sonnet 5.5',
-        mode: ['low', 'medium', 'high', 'xhigh', 'max'],
-        defaultMode: 'high',
-      },
-    ],
+    models: CHAT_MODELS.anthropic,
   },
   {
     id: 'google',
@@ -95,14 +56,7 @@ export const providers: Array<ProviderDefinition> = [
     icon: Google,
     keyPrefix: 'AIza',
     capabilities: PROVIDER_CAPABILITIES.google,
-    models: [
-      {
-        id: 'gemini-3.8-flash',
-        name: 'Gemini 3.8 Flash',
-        mode: ['low', 'medium', 'high'],
-        defaultMode: 'medium',
-      },
-    ],
+    models: CHAT_MODELS.google,
   },
   {
     id: 'exa',

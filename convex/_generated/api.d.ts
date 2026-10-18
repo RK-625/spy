@@ -9,6 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as chat_conversations from "../chat/conversations.js";
+import type * as chat_generate from "../chat/generate.js";
+import type * as chat_messages from "../chat/messages.js";
+import type * as chat_models from "../chat/models.js";
+import type * as chat_ownership from "../chat/ownership.js";
+import type * as chat_runtime from "../chat/runtime.js";
+import type * as chat_validators from "../chat/validators.js";
 import type * as http from "../http.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as providers_actions from "../providers/actions.js";
@@ -27,6 +34,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "chat/conversations": typeof chat_conversations;
+  "chat/generate": typeof chat_generate;
+  "chat/messages": typeof chat_messages;
+  "chat/models": typeof chat_models;
+  "chat/ownership": typeof chat_ownership;
+  "chat/runtime": typeof chat_runtime;
+  "chat/validators": typeof chat_validators;
   http: typeof http;
   myFunctions: typeof myFunctions;
   "providers/actions": typeof providers_actions;
@@ -66,4 +80,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
+  agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
 };
