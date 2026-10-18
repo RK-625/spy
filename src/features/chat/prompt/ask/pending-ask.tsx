@@ -1,0 +1,69 @@
+/**
+ * Pending-ask leaves: question header + option chip.
+ * Body owns layout; these are presentation-only leaves.
+ * Not the deprecated morph ask-user-question widget.
+ */
+
+import type { PendingAskUserQuestion } from '../../ask-user-question'
+import { cn } from '~/lib/utils'
+
+export type PromptInputAskOption = PendingAskUserQuestion['options'][number]
+
+export type PromptInputQuestionProps = {
+  id: string
+  children: string
+}
+
+/**
+ * Pending-ask question header — leaf only; no card/border/bg.
+ * Body owns H gutter (`--prompt-body-px/py`); leaves have no horizontal pad.
+ */
+export function PromptInputQuestion({
+  id,
+  children,
+}: PromptInputQuestionProps) {
+  return (
+    <p
+      id={id}
+      data-slot="prompt-input-question"
+      className="w-full min-w-0 text-left text-base font-semibold leading-snug text-text-primary line-clamp-2"
+    >
+      {children}
+    </p>
+  )
+}
+
+export type PromptInputOptionProps = {
+  option: PromptInputAskOption
+  disabled?: boolean
+  onSelect?: (option: PromptInputAskOption) => void
+}
+
+/**
+ * Pending-ask option chip — leaf only; group shell stays on Body.
+ * Body owns H gutter; leaves have no horizontal pad.
+ */
+export function PromptInputOption({
+  option,
+  onSelect,
+  disabled,
+}: PromptInputOptionProps) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      data-slot="prompt-input-option"
+      className={cn(
+        'w-full min-h-8 rounded-[var(--radius)] py-2 text-left text-sm text-text-primary',
+        'transition-colors outline-none',
+        'hover:bg-[var(--surface-hover)]',
+        'focus-visible:ring-2 focus-visible:ring-ring',
+      )}
+      onClick={() => {
+        onSelect?.(option)
+      }}
+    >
+      {option.label}
+    </button>
+  )
+}

@@ -106,7 +106,10 @@ The first port covers navigation, search actions, theme preferences, General
 settings and sign-out. Chat composition/history, note hierarchy/detail/learning,
 and graph rendering remain to be connected. Conversation presentation is
 ported under `features/chat/conversation`, with a standalone props interface
-and an isolated `/conversation` preview in the workspace fixture. Provider/embedding/tool settings now
+and isolated `/conversation` and `/composer` previews in the workspace fixture.
+The source prompt lives under `features/chat/prompt`; its draft and turn
+acceptance interfaces are supplied by the owning feature, with no desktop
+storage or backend imports in the presentation components. Provider/embedding/tool settings now
 use encrypted, user-scoped Convex storage through `features/providers`. Only
 masked key hints reach the browser after saving. Google embeddings and at least
 one chat provider are required; a Google key can satisfy both.

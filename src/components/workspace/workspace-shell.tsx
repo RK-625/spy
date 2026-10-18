@@ -10,6 +10,7 @@ import type { SettingsPane } from './settings/workspace-settings'
 import type { ProviderKeySettings } from '~/lib/providers/types'
 import type { ReactNode } from 'react'
 import type { WorkspacePath } from './navigation'
+import { AppToaster } from '~/components/ui/feedback/sonner'
 import { TooltipProvider } from '~/components/ui/overlays/tooltip'
 
 export function WorkspaceShell({
@@ -109,6 +110,7 @@ export function WorkspaceShell({
           activePane={settingsPane}
           onPaneChange={setSettingsPane}
         />
+        <AppToaster />
       </div>
     </TooltipProvider>
   )

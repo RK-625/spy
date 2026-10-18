@@ -17,6 +17,12 @@ const ConversationPreview = lazy(() =>
   })),
 )
 
+const ComposerPreview = lazy(() =>
+  import('./composer-preview').then((module) => ({
+    default: module.ComposerPreview,
+  })),
+)
+
 // Isolated UI fixture. It never imports the application router, auth client,
 // session guard, or backend and cannot bypass the production login flow.
 function FixtureRoot() {
@@ -61,7 +67,25 @@ const conversationRoute = createRoute({
   ),
 })
 const router = createRouter({
-  routeTree: rootRoute.addChildren([...children, conversationRoute]),
+  routeTree: rootRoute.addChildren([
+    ...children,
+    conversationRoute,
+    createRoute({
+      getParentRoute: () => rootRoute,
+      path: '/composer',
+      component: () => (
+        <Suspense
+          fallback={
+            <p role="status" className="p-4">
+              Loading composer preview…
+            </p>
+          }
+        >
+          <ComposerPreview />
+        </Suspense>
+      ),
+    }),
+  ]),
 })
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing workspace fixture root')

@@ -36,6 +36,25 @@ when running the existing workspace fixture. It uses local presentation data
 only, with no account/key/backend imports. The production routes do not yet
 mount this renderer; the composer and durable conversation transport come next.
 
+## Composer component sprint
+
+Ported the original prompt under `src/features/chat/prompt/`: browser-only
+Milkdown Markdown editor with a shared textarea fallback, file picker/paste/drop
+validation and chips, quote chips, pending-question options, voice input,
+model/mode pickers and source tool controls. `PromptInputWorkspace` receives key
+status, settings navigation and send/stop handlers as props. Unimplemented tools
+can be hidden by the owning feature until their server handlers exist.
+
+`PromptInputProvider` exposes an initial draft and change callback rather than
+copying the desktop IndexedDB/database access. The owning feature must wait for
+its saved draft before mounting and supply persistence. File blobs and API keys
+are never mixed. The form awaits turn acceptance before clearing; failed sends
+and edits made during an upload retain their draft.
+
+The isolated `/composer` fixture renders this UI with presentation-only key
+hints and appends user messages in memory. It never calls a model or backend.
+Production composition, durable drafts and chat transport remain next.
+
 ## Remaining feature ports
 
 | Feature                                    | Original source                                                                                                   | Required integration                                                                                      |
