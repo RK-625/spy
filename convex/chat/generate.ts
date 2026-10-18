@@ -11,8 +11,32 @@ import { webSearchTool } from './tools/search'
 import { askUserQuestion } from './tools/question'
 import { memoryTools } from './tools/memory'
 import { chatInstructions } from './prompts/instructions'
-import type { ToolSet } from 'ai'
+import { connectExcalidraw } from './excalidraw'
+import { withRegisteredToolHistory } from './toolHistory'
+import type { ExcalidrawConnection } from './excalidraw'
+import type { ModelMessage, ToolSet } from 'ai'
+import type { ActionCtx } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
+
+/** Stores declared app resources (cache-first) so result cards can render them. */
+async function syncMcpApps(ctx: ActionCtx, connection: ExcalidrawConnection) {
+  const apps = connection.apps
+  if (apps.length === 0) return
+  try {
+    const stale = await ctx.runQuery(internal.chat.mcpApps.staleUris, {
+      uris: apps.map((app) => app.uri),
+      now: Date.now(),
+    })
+    for (const uri of stale) {
+      const resource = await connection.readResource(uri)
+      if (resource)
+        await ctx.runMutation(internal.chat.mcpApps.sync, { apps, resource })
+    }
+    await ctx.runMutation(internal.chat.mcpApps.sync, { apps })
+  } catch {
+    // Diagrams still reach the model; only their embedded view is unavailable.
+  }
+}
 
 export const reply = internalAction({
   args: { conversationId: v.id('conversations'), requestId: v.string() },
@@ -23,6 +47,7 @@ export const reply = internalAction({
   ) => {
     if (!(await ctx.runMutation(internal.chat.runtime.begin, args))) return null
     let failed = false
+    let excalidraw: ExcalidrawConnection | null = null
     const controller = new AbortController()
     const deadline = setTimeout(
       () => controller.abort('Response timed out'),
@@ -59,11 +84,32 @@ export const reply = internalAction({
       }
       if (searchEnabled)
         tools.webSearch = webSearchTool(ctx, args, controller.signal)
+      // Source behavior: a failed MCP connect continues the turn without diagrams.
+      if (context.turn.useExcalidraw === true) {
+        excalidraw = await connectExcalidraw(controller.signal).catch(
+          () => null,
+        )
+        if (excalidraw) {
+          // An untrusted server cannot replace product tools.
+          for (const [name, mcpTool] of Object.entries(excalidraw.tools))
+            if (!(name in tools)) tools[name] = mcpTool
+          await syncMcpApps(ctx, excalidraw)
+        }
+      }
+      const registered = new Set(Object.keys(tools))
       const options = {
         name: 'Spy',
         languageModel: config.model,
-        instructions: chatInstructions({ buildMode, webSearch: searchEnabled }),
+        instructions: chatInstructions({
+          buildMode,
+          webSearch: searchEnabled,
+          excalidraw: excalidraw !== null,
+        }),
         contextOptions: { recentMessages: 100 },
+        contextHandler: (
+          _: unknown,
+          { allMessages }: { allMessages: Array<ModelMessage> },
+        ) => withRegisteredToolHistory(allMessages, registered),
         tools,
       }
       const agent = new Agent<object, typeof tools>(components.agent, options)
@@ -83,8 +129,10 @@ export const reply = internalAction({
           providerOptions: config.providerOptions,
           abortSignal: controller.signal,
           maxRetries: 0,
-          // Source budgets: web search or build mode need room for retrieval and writes.
-          stopWhen: isStepCount(searchEnabled || buildMode ? 25 : 8),
+          // Source budgets: web search, Excalidraw or build mode need room for tool loops.
+          stopWhen: isStepCount(
+            searchEnabled || buildMode || excalidraw ? 25 : 8,
+          ),
           prepareStep: async () => {
             await checkStop()
           },
@@ -103,6 +151,7 @@ export const reply = internalAction({
       failed = true
     } finally {
       clearTimeout(deadline)
+      await excalidraw?.close().catch(() => {})
       await ctx.runMutation(internal.chat.runtime.finish, { ...args, failed })
     }
     return null

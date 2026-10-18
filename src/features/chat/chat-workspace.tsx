@@ -22,6 +22,7 @@ export interface ChatWorkspaceProps extends PromptInputWorkspaceProps {
   forkPending?: boolean
   renderToolPart?: ConversationViewProps['renderToolPart']
   history?: ConversationViewProps['history']
+  mcpApps?: ConversationViewProps['mcpApps']
 }
 
 /** Source chat layout. Its owner supplies durable conversation/draft state and authenticated actions. */
@@ -48,6 +49,7 @@ function ChatWorkspaceContent({
   forkPending,
   renderToolPart,
   history,
+  mcpApps,
   ...composer
 }: ChatWorkspaceProps) {
   const { quotes, focusInput, prefs } = usePromptInputContext()
@@ -82,6 +84,7 @@ function ChatWorkspaceContent({
         renderToolPart={renderToolPart}
         onAddQuote={addQuote}
         history={history}
+        mcpApps={mcpApps}
       />
       <PromptInputWorkspace {...composer} />
     </>

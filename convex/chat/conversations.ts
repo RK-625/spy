@@ -89,6 +89,7 @@ export const send = mutation({
     mode: v.string(),
     useWebSearch: v.optional(v.boolean()),
     useBuildMode: v.optional(v.boolean()),
+    useExcalidraw: v.optional(v.boolean()),
     uploadIds: v.optional(v.array(v.id('chatUploads'))),
     draftKey: v.optional(v.string()),
     draftVersion: v.optional(v.string()),
@@ -218,6 +219,7 @@ export const send = mutation({
           args.useWebSearch && keys.some((key) => key.provider === 'exa'),
         ),
         useBuildMode: args.useBuildMode === true,
+        useExcalidraw: args.useExcalidraw === true,
       },
     })
     const receiptId = await ctx.db.insert('chatRequests', {
