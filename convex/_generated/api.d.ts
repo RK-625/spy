@@ -43,6 +43,7 @@ import type * as chat_tools_question from "../chat/tools/question.js";
 import type * as chat_tools_search from "../chat/tools/search.js";
 import type * as chat_upload from "../chat/upload.js";
 import type * as chat_validators from "../chat/validators.js";
+import type * as demoUser from "../demoUser.js";
 import type * as http from "../http.js";
 import type * as memory_actions from "../memory/actions.js";
 import type * as memory_graph from "../memory/graph.js";
@@ -103,6 +104,7 @@ declare const fullApi: ApiFromModules<{
   "chat/tools/search": typeof chat_tools_search;
   "chat/upload": typeof chat_upload;
   "chat/validators": typeof chat_validators;
+  demoUser: typeof demoUser;
   http: typeof http;
   "memory/actions": typeof memory_actions;
   "memory/graph": typeof memory_graph;
