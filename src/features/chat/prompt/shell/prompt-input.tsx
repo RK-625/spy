@@ -641,7 +641,7 @@ function PromptInputWorkspaceContent({
   )
 
   return (
-    <div className="w-full px-4 pb-4 pt-1">
+    <div className="mx-auto w-full max-w-4xl px-4 pb-4 pt-1">
       <div className="chat-input-wrap relative">
         <div className="chat-input-glow" />
         <PromptInput
