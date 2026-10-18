@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { AppearancePane } from './appearance-pane'
+import { EmbeddingsPane, ProvidersPane, ToolsPane } from './provider-panes'
 import {
   SETTINGS_CARD_CLASS,
   SETTINGS_CARD_LABEL_CLASS,
   SettingsPaneHeader,
 } from './settings-pane-chrome'
+import type { ProviderKeySettings } from '~/lib/providers/types'
 import {
   Dialog,
   DialogContent,
@@ -19,21 +21,29 @@ import { cn } from '~/lib/utils'
 const PANES = [
   { id: 'general', label: 'General' },
   { id: 'appearance', label: 'Appearance' },
+  { id: 'providers', label: 'Providers' },
+  { id: 'embeddings', label: 'Embeddings' },
+  { id: 'tools', label: 'Tools' },
 ] as const
-type SettingsPane = (typeof PANES)[number]['id']
+export type SettingsPane = (typeof PANES)[number]['id']
 
 export function WorkspaceSettings({
   open,
   onOpenChange,
   user,
   onSignOut,
+  providerKeys,
+  activePane,
+  onPaneChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
+  providerKeys?: ProviderKeySettings
+  activePane: SettingsPane
+  onPaneChange: (pane: SettingsPane) => void
 }) {
-  const [activePane, setActivePane] = useState<SettingsPane>('general')
   const [signOutPending, setSignOutPending] = useState(false)
   const [signOutError, setSignOutError] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
@@ -53,23 +63,25 @@ export function WorkspaceSettings({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[min(var(--settings-dialog-h),calc(100dvh-2rem))] flex-col gap-0 overflow-hidden rounded-lg border border-[var(--border-medium)] bg-[var(--surface-input-opaque)] p-0 shadow-[0_24px_60px_var(--shadow-dialog)] backdrop-blur-md sm:max-w-[var(--settings-dialog-w)] sm:flex-row">
         <DialogDescription className="sr-only">
-          Spy session and appearance preferences.
+          Spy session, appearance, and personal API keys.
         </DialogDescription>
         <nav
           aria-label="Settings sections"
-          className="flex shrink-0 flex-row gap-1 border-b border-border-subtle px-3 py-4 pr-12 sm:w-[var(--settings-nav-w)] sm:flex-col sm:border-b-0 sm:border-r sm:py-5 sm:pr-3"
+          className="flex shrink-0 flex-row gap-1 overflow-x-auto border-b border-border-subtle px-3 py-4 pr-12 sm:w-[var(--settings-nav-w)] sm:flex-col sm:border-b-0 sm:border-r sm:py-5 sm:pr-3"
         >
           <DialogTitle className="sr-only sm:not-sr-only sm:px-2.5 sm:pb-3.5 sm:font-terminal sm:text-xl sm:tracking-widest sm:text-primary">
             Settings
           </DialogTitle>
-          {PANES.map(({ id, label }) => (
+          {PANES.filter(
+            ({ id }) => providerKeys || id === 'general' || id === 'appearance',
+          ).map(({ id, label }) => (
             <button
               type="button"
               key={id}
               aria-current={activePane === id ? 'page' : undefined}
-              onClick={() => setActivePane(id)}
+              onClick={() => onPaneChange(id)}
               className={cn(
-                'relative rounded-lg px-2.5 py-2 text-left text-sm',
+                'relative shrink-0 rounded-lg px-2.5 py-2 text-left text-sm',
                 activePane === id
                   ? 'text-primary'
                   : 'text-lavender-muted hover:text-primary-hover',
@@ -94,7 +106,19 @@ export function WorkspaceSettings({
               transition={reducedMotion ? { duration: 0 } : MOTION.chrome}
               className="flex flex-col gap-4"
             >
-              {activePane === 'appearance' ? (
+              {providerKeys && activePane === 'providers' ? (
+                <ProvidersPane {...providerKeys} />
+              ) : providerKeys && activePane === 'embeddings' ? (
+                <EmbeddingsPane
+                  {...providerKeys}
+                  isEmbeddingKeyMissing={
+                    !providerKeys.hasEmbeddings &&
+                    providerKeys.keyHints !== null
+                  }
+                />
+              ) : providerKeys && activePane === 'tools' ? (
+                <ToolsPane {...providerKeys} />
+              ) : activePane === 'appearance' ? (
                 <AppearancePane />
               ) : (
                 <>

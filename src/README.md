@@ -9,6 +9,7 @@ src/
     workspace/             Shared sidebar and workspace navigation
   features/
     auth/                  Login page, session guard, and Convex auth provider
+    providers/             User-owned key persistence and workspace integration
     landing/               Landing experience
     chat/                  Conversations, prompt, and tool displays
     notes/                 Notes hierarchy and note detail
@@ -50,11 +51,11 @@ src/
 - Access is limited to existing Better Auth users with password credentials.
   Public signup, account deletion, and account linking/unlinking are disabled
   in the backend. The login page has no account-management controls; this sprint
-  does not create SPY profiles or add onboarding.
+  does not create SPY profiles or offer account provisioning.
 - Put workspace routes under the pathless `_authenticated` layout. It checks
   the server-validated session before rendering and mounts the shared workspace
-  shell. `/`, `/chat`, `/notes`, and `/graph` have blank content areas until their
-  feature ports are connected.
+  shell through the provider feature. `/`, `/chat`, `/notes`, and `/graph` show
+  API-key setup until required keys exist, then their feature content.
 - `lib/auth-server.ts` connects server-side session checks and the same-origin
   `/api/auth/*` proxy to the existing Better Auth deployment. JWT caching stays
   disabled (the integration default), so a cookie alone never grants access.
@@ -103,10 +104,13 @@ key. Command/Ctrl+B changes its mode; Command/Ctrl+K opens action search.
 
 The first port covers navigation, search actions, theme preferences, General
 settings and sign-out. Chat composition/history, note hierarchy/detail/learning,
-graph rendering, and provider/embedding/tool settings remain to be ported.
+and graph rendering remain to be ported. Provider/embedding/tool settings now
+use encrypted, user-scoped Convex storage through `features/providers`. Only
+masked key hints reach the browser after saving. Google embeddings and at least
+one chat provider are required; a Google key can satisfy both.
 The original SQLite, FalkorDB, and macOS keychain modules are not imported into
 this Convex app. See `docs/workspace-port.md` for the remaining source map and
-the provider-key decision needed before wiring the rest of the workspace.
+the provider integration used by the remaining workspace ports.
 
 Run `bun run test:workspace:dev` to inspect the same shared UI at
 `http://localhost:3016`. This is a separate Vite component fixture under

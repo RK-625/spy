@@ -1,6 +1,6 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { SessionGuard } from '~/features/auth/session-guard'
-import { WorkspaceShell } from '~/components/workspace/workspace-shell'
+import { ProviderWorkspace } from '~/features/providers/provider-workspace'
 import { authClient, signOut } from '~/lib/auth-client'
 
 export const Route = createFileRoute('/_authenticated')({
@@ -17,9 +17,13 @@ function AuthenticatedWorkspace() {
   return (
     <SessionGuard>
       {session && (
-        <WorkspaceShell user={session.user} onSignOut={signOut}>
+        <ProviderWorkspace
+          key={session.user.id}
+          user={session.user}
+          onSignOut={signOut}
+        >
           <Outlet />
-        </WorkspaceShell>
+        </ProviderWorkspace>
       )}
     </SessionGuard>
   )

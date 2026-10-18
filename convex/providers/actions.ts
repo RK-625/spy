@@ -14,7 +14,7 @@ export const save = action({
   handler: async (ctx, { provider, apiKey }) => {
     const owner = await requireKeyOwner(ctx)
     const key = apiKey.trim()
-    if (key.length < 8 || key.length > 4096 || /[\s\x00-\x1f\x7f]/.test(key)) {
+    if (key.length < 8 || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
       return {
         ok: false as const,
         error: 'Enter a valid API key (8–4096 characters, without spaces).',

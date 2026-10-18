@@ -11,7 +11,10 @@ export type ProviderId = (typeof PROVIDER_IDS)[number]
 export type ChatProviderId = Exclude<ProviderId, 'exa'>
 export type ProviderCapability = 'chat' | 'embeddings' | 'webSearch'
 
-export const PROVIDER_CAPABILITIES: Record<ProviderId, ProviderCapability[]> = {
+export const PROVIDER_CAPABILITIES: Record<
+  ProviderId,
+  Array<ProviderCapability>
+> = {
   deepseek: ['chat'],
   meta: ['chat'],
   openai: ['chat'],
@@ -20,7 +23,7 @@ export const PROVIDER_CAPABILITIES: Record<ProviderId, ProviderCapability[]> = {
   exa: ['webSearch'],
 }
 
-export function getKeyRequirements(savedProviders: readonly ProviderId[]) {
+export function getKeyRequirements(savedProviders: ReadonlyArray<ProviderId>) {
   const hasEmbeddings = savedProviders.includes('google')
   const hasChatProvider = savedProviders.some((id) =>
     PROVIDER_CAPABILITIES[id].includes('chat'),

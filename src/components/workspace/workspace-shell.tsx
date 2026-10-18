@@ -5,6 +5,9 @@ import { WorkspaceSidebar } from './sidebar/workspace-sidebar'
 import { WorkspaceSettings } from './settings/workspace-settings'
 import { CommandPalette } from './search/command-palette'
 import { WORKSPACE_ROUTES } from './navigation'
+import { ProviderSetup } from './settings/provider-setup'
+import type { SettingsPane } from './settings/workspace-settings'
+import type { ProviderKeySettings } from '~/lib/providers/types'
 import type { ReactNode } from 'react'
 import type { WorkspacePath } from './navigation'
 import { TooltipProvider } from '~/components/ui/overlays/tooltip'
@@ -12,16 +15,19 @@ import { TooltipProvider } from '~/components/ui/overlays/tooltip'
 export function WorkspaceShell({
   user,
   onSignOut,
+  providerKeys,
   children,
 }: {
   user: { name: string; email: string }
   onSignOut: () => Promise<void>
+  providerKeys?: ProviderKeySettings
   children: ReactNode
 }) {
   const pathname = useLocation({ select: (location) => location.pathname })
   const navigate = useNavigate()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [settingsPane, setSettingsPane] = useState<SettingsPane>('general')
   const commandGroups = useMemo(
     () => [
       {
@@ -71,7 +77,19 @@ export function WorkspaceShell({
           tabIndex={-1}
           className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden outline-none"
         >
-          {children}
+          {providerKeys && !providerKeys.ready ? (
+            <ProviderSetup
+              keys={providerKeys}
+              onOpenSettings={() => {
+                setSettingsPane(
+                  providerKeys.hasEmbeddings ? 'providers' : 'embeddings',
+                )
+                setSettingsOpen(true)
+              }}
+            />
+          ) : (
+            children
+          )}
         </div>
         <CommandPalette
           open={searchOpen}
@@ -87,6 +105,9 @@ export function WorkspaceShell({
           onOpenChange={setSettingsOpen}
           user={user}
           onSignOut={onSignOut}
+          providerKeys={providerKeys}
+          activePane={settingsPane}
+          onPaneChange={setSettingsPane}
         />
       </div>
     </TooltipProvider>
