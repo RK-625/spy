@@ -1,12 +1,9 @@
 @import 'tailwindcss';
-
-@layer base {
-  html,
-  body {
-    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
-  }
-
-  .using-mouse * {
-    outline: none !important;
-  }
-}
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import './tokens/typography.css';
+@import './tokens/foundation.css';
+@import './tokens/palette-light.css';
+@import './tokens/palette-dark.css';
+@import './theme.css';
+@import './base.css';

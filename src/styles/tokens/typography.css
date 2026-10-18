@@ -1,0 +1,39 @@
+/* The same Latin font files used by the original SPY root layout. */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'Unbounded Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/vt323/files/vt323-latin-400-normal.woff2')
+    format('woff2');
+}
+
+/* Keep these available to CSS and canvas consumers before their UI is ported. */
+@theme static {
+  --font-sans: 'Inter Variable', sans-serif;
+  --font-display: 'Unbounded Variable', sans-serif;
+  --font-body: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --font-terminal: 'VT323', monospace;
+  --font-code:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  --font-mono: var(--font-code);
+}

@@ -1,0 +1,43 @@
+/* Ported from RK-625/spy-frontend at 119b08245b101a3aeabbe3e7ca1ea67cd1400878. */
+:root {
+  /* ── Design Tokens ── */
+  /* Colors live in src/styles/tokens/palette-{light,dark}.css; this block holds
+     theme-independent tokens and aliases that resolve against the active palette. */
+
+  --duration-fast: 150ms;
+  --ease-chrome: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Code tokens */
+  --code-surface: color-mix(in srgb, var(--surface-elevated) 80%, transparent);
+
+  /* Prompt input body gutter + textarea floor */
+  --prompt-body-px: 0.625rem; /* 10px — was Tailwind px-2.5 */
+  --prompt-body-py: 0.5rem; /* 8px — was Tailwind py-2 */
+  --prompt-textarea-min-h: 1.25rem; /* 20px — was min-h-5 */
+  --prompt-input-radius: 0.825rem;
+
+  /* Pill aliases */
+  --pill-source-text: var(--lavender-muted);
+  --pill-status-text: var(--lavender);
+
+  /* Session status dots (settings / HUD) — lavender system, no ad-hoc red/emerald */
+  --status-dot-streaming: var(--lavender);
+  --status-dot-ready: var(--lavender-muted);
+  /* Same red as --destructive so size-1.5 dots stay glanceable on dark cards */
+  --status-dot-error: var(--destructive);
+
+  /* Settings dialog — two-pane layout */
+  --settings-dialog-w: 764px;
+  --settings-dialog-h: 544px;
+  --settings-nav-w: 176px;
+
+  /* ── shadcn/ui tokens ── */
+  --radius: 0.55rem;
+  /* Icon control tokens — densified 3-role system (Plan B) */
+  --control-toolbar-box: 32px;
+  --control-toolbar-glyph: 20px;
+  --control-badge-box: 18px;
+  --control-badge-glyph: 14px;
+  --glyph-inline-size: 16px;
+  --radius-badge: calc(var(--radius) * 0.45);
+}
